@@ -28,6 +28,6 @@ public class RootController {
      */
     @GetMapping("/test")
     public ResponseEntity<String> welcome() {
-        return ok("Welcome to ccpay-notifications-service");
+        return ok("Welcome to ccpay-notification-service");
     }
 }
