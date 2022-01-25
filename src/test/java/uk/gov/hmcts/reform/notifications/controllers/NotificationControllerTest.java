@@ -632,6 +632,8 @@ public class NotificationControllerTest {
         Assertions.assertEquals("Internal Server Error",result.getResolvedException().getMessage());
 
     }
+    
+    
 
 
 }
