@@ -28,5 +28,7 @@ java:
           alias: POSTGRES_PASSWORD
         - name: AppInsightsInstrumentationKey
           alias: azure.application-insights.instrumentation-key
+          
+          
 
 
