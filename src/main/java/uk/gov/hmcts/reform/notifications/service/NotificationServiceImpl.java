@@ -147,4 +147,20 @@ public class NotificationServiceImpl implements NotificationService {
         }
         return notificationResponseDto;
     }
+
+    @Override
+    public TemplatePreview previewNotification(RefundNotificationEmailRequest refundNotificationEmailRequest) {
+        TemplatePreview templatePreview = null;
+        try {
+            templatePreview = notificationEmailClient
+                    .generateTemplatePreview(refundNotificationEmailRequest.getTemplateId(),
+                            createEmailPersonalisation(refundNotificationEmailRequest.getPersonalisation()));
+        } catch (NotificationClientException exception) {
+            GovNotifyExceptionWrapper exceptionWrapper = new GovNotifyExceptionWrapper();
+            LOG.error(exception.getMessage());
+            throw exceptionWrapper.mapGovNotifyPreviewException(exception);
+        }
+        return templatePreview;
+    }
+
 }
