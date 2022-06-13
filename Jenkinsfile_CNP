@@ -46,40 +46,4 @@ withPipeline(type, product, component) {
   enableDbMigration('ccpay')
   syncBranchesWithMaster(branchesToSync)
 
-
-  after('functionalTest:preview') {
-
-    publishHTML target: [
-      reportDir            : "build/reports/tests/functional",
-      allowMissing         : true,
-      alwaysLinkToLastBuild: true,
-      keepAll              : true,
-      reportFiles          : "index.html",
-      reportName           : "Preview Functional Tests",
-      alwaysLinkToLastBuild: true,
-      reportName           : "CCPAY NOTIFICATIONS SERVICE PREVIEW API Functional Test Report"
-    ]
-
-    publishHTML target: [
-      reportDir            : "target/site/serenity/",
-      allowMissing         : true,
-      alwaysLinkToLastBuild: true,
-      keepAll              : true,
-      reportFiles          : "index.html",
-      reportName           : "Preview Functional Tests",
-      alwaysLinkToLastBuild: true,
-      reportName           : "CCPAY NOTIFICATIONS SERVICE PREVIEW API Functional Test Sereneity Report"
-    ]
-    steps.archiveArtifacts allowEmptyArchive: true, artifacts: '**/site/serenity/**/*'
-  }
-
-  after('functionalTest:aat') {
-    publishHTML target: [
-      reportDir            : "target/site/serenity/",
-      reportFiles          : "index.html",
-      reportName           : "CCPAY NOTIFICATIONS SERVICE AAT Functional Tests",
-      alwaysLinkToLastBuild: true
-    ]
-    steps.archiveArtifacts allowEmptyArchive: true, artifacts: '**/site/serenity/**/*'
-  }
 }
