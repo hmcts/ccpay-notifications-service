@@ -80,4 +80,8 @@
     <notes>Apache tomcat version upgrade needed</notes>
     <cve>CVE-2022-34305</cve>
   </suppress>
+  <suppress>
+    <notes>Spring security core upgraded needed</notes>
+    <cve>CVE-2022-22978</cve>
+  </suppress>
 </suppressions>
