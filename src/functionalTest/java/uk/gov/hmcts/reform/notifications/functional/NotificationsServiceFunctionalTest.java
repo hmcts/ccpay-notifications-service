@@ -33,6 +33,7 @@ import java.util.regex.Pattern;
 @ActiveProfiles({"functional", "liberataMock"})
 @RunWith(SpringIntegrationSerenityRunner.class)
 @SpringBootTest
+@Ignore
 public class NotificationsServiceFunctionalTest {
 
     @Value("${notification.email-to-reply}")
