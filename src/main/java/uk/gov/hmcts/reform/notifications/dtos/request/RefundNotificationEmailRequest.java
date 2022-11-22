@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.notifications.dtos.request;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import io.swagger.annotations.ApiModelProperty;
@@ -16,7 +17,10 @@ import javax.validation.constraints.Email;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
+import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL;
+
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+@JsonInclude(NON_NULL)
 @Setter
 @Getter
 @AllArgsConstructor
@@ -28,8 +32,6 @@ public class RefundNotificationEmailRequest {
     @NotEmpty(message = "Template ID cannot be blank")
     private String templateId;
 
-    @NotNull(message = "Recipient Email Address cannot be null")
-    @NotEmpty(message = "Recipient Email Address cannot be blank")
     @Email(message = "Please enter a valid Email Address")
     private String recipientEmailAddress;
 

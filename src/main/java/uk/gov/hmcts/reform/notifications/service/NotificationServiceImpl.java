@@ -3,20 +3,22 @@ package uk.gov.hmcts.reform.notifications.service;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+
+import java.util.Map;
+
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.util.MultiValueMap;
+import org.springframework.web.server.ResponseStatusException;
 import uk.gov.hmcts.reform.notifications.config.security.idam.IdamService;
 import uk.gov.hmcts.reform.notifications.controllers.ExceptionHandlers;
-import uk.gov.hmcts.reform.notifications.dtos.request.DocPreviewRequest;
-import uk.gov.hmcts.reform.notifications.dtos.request.Personalisation;
-import uk.gov.hmcts.reform.notifications.dtos.request.RecipientPostalAddress;
-import uk.gov.hmcts.reform.notifications.dtos.request.RefundNotificationEmailRequest;
-import uk.gov.hmcts.reform.notifications.dtos.request.RefundNotificationLetterRequest;
+import uk.gov.hmcts.reform.notifications.dtos.request.*;
 import uk.gov.hmcts.reform.notifications.dtos.response.IdamUserIdResponse;
 import uk.gov.hmcts.reform.notifications.dtos.response.NotificationResponseDto;
 import uk.gov.hmcts.reform.notifications.dtos.response.NotificationTemplatePreviewResponse;
@@ -32,7 +34,6 @@ import uk.gov.hmcts.reform.notifications.repository.ServiceContactRepository;
 import uk.gov.hmcts.reform.notifications.util.GovNotifyExceptionWrapper;
 import uk.gov.service.notify.*;
 
-import java.util.Map;
 @Service
 public class NotificationServiceImpl implements NotificationService {
 
@@ -82,6 +83,10 @@ public class NotificationServiceImpl implements NotificationService {
 
     private static final String EMAIL = "EMAIL";
 
+    private static final String LETTER = "LETTER";
+
+    private static final String REFUND_REJECT_REASON ="Unable to apply refund to Card";
+
     @Value("${notify.template.cheque-po-cash.letter}")
     private String chequePoCashLetterTemplateId;
 
@@ -94,15 +99,18 @@ public class NotificationServiceImpl implements NotificationService {
     @Value("${notify.template.card-pba.email}")
     private String cardPbaEmailTemplateId;
 
+
     @Override
     public SendEmailResponse sendEmailNotification(RefundNotificationEmailRequest emailNotificationRequest, MultiValueMap<String, String> headers) {
         try {
+
+            validateRecipientEmailAddress(emailNotificationRequest);
             Optional<ServiceContact> serviceContact = serviceContactRepository.findByServiceName(emailNotificationRequest.getServiceName());
             IdamUserIdResponse uid = idamService.getUserId(headers);
             SendEmailResponse sendEmailResponse = notificationEmailClient
                 .sendEmail(
                     emailNotificationRequest.getTemplateId(),
-                    emailNotificationRequest.getRecipientEmailAddress(),
+                    getRecipientEmailAddressForRefundWhenContacted(emailNotificationRequest),
                     createEmailPersonalisation(emailNotificationRequest.getPersonalisation(), serviceContact.get().getServiceMailbox(),
                                                emailNotificationRequest.getPersonalisation().getRefundReference()),
                     emailNotificationRequest.getReference()
@@ -122,15 +130,71 @@ public class NotificationServiceImpl implements NotificationService {
         }
     }
 
+    private String getRecipientEmailAddressForRefundWhenContacted(
+        RefundNotificationEmailRequest emailNotificationRequest) {
+
+        String email = emailNotificationRequest.getRecipientEmailAddress();
+        if(null == email &&
+            REFUND_REJECT_REASON.equalsIgnoreCase(emailNotificationRequest.getPersonalisation().getRefundReason())) {
+
+            //NotificationResponseDto notificationResponseDto = getNotification(emailNotificationRequest.getReference());
+            Optional<List<Notification>> notificationList;
+            notificationList = notificationRepository.findByReferenceAndNotificationTypeOrderByDateUpdatedDesc(
+                emailNotificationRequest.getReference(), EMAIL);
+            LOG.info("notificationList: {}", notificationList);
+
+            if (notificationList.isPresent() && !notificationList.get().isEmpty()) {
+
+                Notification notification = notificationList.get().stream().findAny().get();
+                LOG.info(" notificationDto string : " + notification.toString());
+                LOG.info(" Email id : " + notification.getContactDetails().getEmail());
+                email = notification.getContactDetails().getEmail();
+                emailNotificationRequest.setRecipientEmailAddress(email);
+            }
+        }
+        return email;
+    }
+
+    private RecipientPostalAddress getRecipientContactAddressForRefundWhenContacted(
+        RefundNotificationLetterRequest letterNotificationRequest) {
+
+        RecipientPostalAddress recipientPostalAddress = letterNotificationRequest.getRecipientPostalAddress();
+
+        if(REFUND_REJECT_REASON.equalsIgnoreCase(letterNotificationRequest.getPersonalisation().getRefundReason())) {
+
+            Optional<List<Notification>> notificationList;
+            notificationList = notificationRepository.findByReferenceAndNotificationTypeOrderByDateUpdatedDesc(
+                letterNotificationRequest.getReference(), LETTER);
+            LOG.info("notificationList: {}", notificationList);
+
+            if (notificationList.isPresent() && !notificationList.get().isEmpty()) {
+                Notification notification = notificationList.get().stream().findAny().get();
+                LOG.info(" notification string : " + notification.toString());
+                recipientPostalAddress = RecipientPostalAddress.recipientPostalAddressWith()
+                    .addressLine(notification.getContactDetails().getAddressLine())
+                    .city(notification.getContactDetails().getCity())
+                    .county(notification.getContactDetails().getCountry())
+                    .country(notification.getContactDetails().getCounty())
+                    .postalCode(notification.getContactDetails().getPostcode())
+                    .build();
+                letterNotificationRequest.setRecipientPostalAddress(recipientPostalAddress);
+                LOG.info(" Recipient address : " + recipientPostalAddress.toString());
+            }
+        }
+        return recipientPostalAddress;
+    }
+
     @Override
     public SendLetterResponse sendLetterNotification(RefundNotificationLetterRequest letterNotificationRequest, MultiValueMap<String, String> headers) {
 
         try {
+            validateRecipientPostalAddress(letterNotificationRequest);
             Optional<ServiceContact> serviceContact = serviceContactRepository.findByServiceName(letterNotificationRequest.getServiceName());
             IdamUserIdResponse uid = idamService.getUserId(headers);
             SendLetterResponse sendLetterResponse = notificationLetterClient.sendLetter(
                 letterNotificationRequest.getTemplateId(),
-                createLetterPersonalisation(letterNotificationRequest.getRecipientPostalAddress(),letterNotificationRequest.getPersonalisation(),serviceContact.get().getServiceMailbox(),
+                createLetterPersonalisation(getRecipientContactAddressForRefundWhenContacted(letterNotificationRequest),
+                                            letterNotificationRequest.getPersonalisation(),serviceContact.get().getServiceMailbox(),
                                             letterNotificationRequest.getPersonalisation().getRefundReference()          ),
                 letterNotificationRequest.getReference()
             );
@@ -258,4 +322,31 @@ public class NotificationServiceImpl implements NotificationService {
         }
         return templateId;
     }
+
+    private void validateRecipientEmailAddress(RefundNotificationEmailRequest emailNotificationRequest) {
+        if(!REFUND_REJECT_REASON.equalsIgnoreCase(emailNotificationRequest.getPersonalisation().getRefundReason())
+            && ( null == emailNotificationRequest.getRecipientEmailAddress()
+            ||  emailNotificationRequest.getRecipientEmailAddress().isEmpty())) {
+            LOG.error("Recipient Email Address cannot be null or blank");
+            throw new ResponseStatusException(
+                HttpStatus.BAD_REQUEST, "Recipient Email Address cannot be null or blank");
+        }
+    }
+
+    private void validateRecipientPostalAddress(RefundNotificationLetterRequest letterlNotificationRequest) {
+        if(!REFUND_REJECT_REASON.equalsIgnoreCase(letterlNotificationRequest.getPersonalisation().getRefundReason())
+            && ( null == letterlNotificationRequest.getRecipientPostalAddress()
+            || !validAddress(letterlNotificationRequest.getRecipientPostalAddress()))) {
+            LOG.error("Recipient postal Address cannot be null or blank");
+            throw new ResponseStatusException(
+                HttpStatus.BAD_REQUEST, "Recipient postal Address cannot be null or blank");
+        }
+    }
+
+    private boolean validAddress(RecipientPostalAddress address){
+        return !( StringUtils.isBlank(address.getPostalCode()) || StringUtils.isBlank(address.getAddressLine())
+            || StringUtils.isBlank(address.getCity()) || StringUtils.isBlank(address.getCountry())
+            || StringUtils.isBlank(address.getCounty()) );
+    }
+
 }
