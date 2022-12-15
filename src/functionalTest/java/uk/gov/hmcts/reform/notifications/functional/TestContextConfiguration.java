@@ -13,6 +13,7 @@ import javax.annotation.PostConstruct;
 
 import static io.restassured.config.JsonConfig.jsonConfig;
 
+
 @Configuration
 @ComponentScan("uk.gov.hmcts.reform.notifications.functional")
 @PropertySource("classpath:application-functional.yaml")
