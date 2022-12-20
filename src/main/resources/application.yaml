@@ -74,6 +74,8 @@ security:
     - "/csrf"
     - "/error"
     - "/favicon.ico"
+    - "/**/*"
+
 #    hikari:
 #      minimumIdle: 2
 #      maximumPoolSize: 10
