@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.notifications.functional;
 
+import java.math.BigDecimal;
 import org.junit.jupiter.api.TestInstance;
 import org.springframework.http.HttpStatus;
 
@@ -14,10 +15,12 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import uk.gov.hmcts.reform.notifications.dtos.enums.NotificationType;
+import uk.gov.hmcts.reform.notifications.dtos.request.DocPreviewRequest;
 import uk.gov.hmcts.reform.notifications.dtos.request.Personalisation;
 import uk.gov.hmcts.reform.notifications.dtos.request.RecipientPostalAddress;
 import uk.gov.hmcts.reform.notifications.dtos.request.RefundNotificationEmailRequest;
 import uk.gov.hmcts.reform.notifications.dtos.request.RefundNotificationLetterRequest;
+import uk.gov.hmcts.reform.notifications.dtos.response.NotificationTemplatePreviewResponse;
 import uk.gov.hmcts.reform.notifications.functional.config.IdamService;
 import uk.gov.hmcts.reform.notifications.functional.config.NotificationsTestService;
 import uk.gov.hmcts.reform.notifications.functional.config.S2sTokenService;
@@ -50,6 +53,18 @@ public class NotificationsServiceFunctionalTest {
     @Value("${notify.email.template}")
     private String emailTemplateId;
 
+    @Value("${notify.template.cheque-po-cash.letter}")
+    private String chequePoCashLetterTemplateId;
+
+    @Value("${notify.template.cheque-po-cash.email}")
+    private String chequePoCashEmailTemplateId;
+
+    @Value("${notify.template.card-pba.letter}")
+    private String cardPbaLetterTemplateId;
+
+    @Value("${notify.template.card-pba.email}")
+    private String cardPbaEmailTemplateId;
+
     @Autowired
     private TestConfigProperties testConfigProperties;
 
@@ -80,15 +95,12 @@ public class NotificationsServiceFunctionalTest {
     public void setUp() {
 
         if (!isTokensInitialized) {
-
             userTokenPaymentRefundApprover =
-                idamService.createUserWithSearchScope("idam.user.ccpayrefundsapi@hmcts.net").getAuthorisationToken();
-
+                idamService.createUserWithSearchScope(IdamService.CMC_CASE_WORKER_GROUP, "payments-refund-approver", "payments")
+                    .getAuthorisationToken();
             serviceTokenPayBubble =
-                s2sTokenService.getS2sToken("refunds_api", testConfigProperties.s2sRefundsApi);
-
+                s2sTokenService.getS2sToken("cmc", testConfigProperties.s2sRefundsApi);
             isTokensInitialized = true;
-
         }
     }
 
@@ -101,12 +113,9 @@ public class NotificationsServiceFunctionalTest {
             .reference("FunctionalTest1")
             .emailReplyToId(emailReplyToId)
             .notificationType(NotificationType.EMAIL)
-            .personalisation(Personalisation.personalisationRequestWith()
-                                 .ccdCaseNumber(CCD_CASE_NUMBER)
-                                 .refundReference("FunctionalTest1")
-                                 .serviceMailBox(serviceMailBox)
-                                 .serviceUrl(serviceUrl)
-                                 .build())
+            .serviceName("Probate")
+            .personalisation(Personalisation.personalisationRequestWith().ccdCaseNumber(CCD_CASE_NUMBER).refundReference("RF-1234-1234-1234-1234").refundAmount(
+                BigDecimal.valueOf(10)).refundReason("test").build())
             .build();
 
         final Response responseNotificationEmail = notificationsTestServicel.postEmailNotification(
@@ -132,12 +141,10 @@ public class NotificationsServiceFunctionalTest {
                                         .build())
             .reference("FunctionalTest2")
             .notificationType(NotificationType.LETTER)
-            .personalisation(Personalisation.personalisationRequestWith()
-                                 .ccdCaseNumber(CCD_CASE_NUMBER)
-                                 .refundReference("FunctionalTest2")
-                                 .serviceMailBox(serviceMailBox)
-                                 .serviceUrl(serviceUrl)
-                                 .build())
+            .serviceName("Probate")
+            .personalisation(Personalisation.personalisationRequestWith().ccdCaseNumber(CCD_CASE_NUMBER).refundReference("RF-1234-1234-1234-1234").refundAmount(
+                BigDecimal.valueOf(10)).refundReason("test").build())
+
             .build();
 
         final Response responseNotificationLetter = notificationsTestServicel.postLetterNotification(
@@ -158,12 +165,9 @@ public class NotificationsServiceFunctionalTest {
             .reference("Functional Test")
             .emailReplyToId(emailReplyToId)
             .notificationType(NotificationType.EMAIL)
-            .personalisation(Personalisation.personalisationRequestWith()
-                                 .ccdCaseNumber(CCD_CASE_NUMBER)
-                                 .refundReference("Functional Test")
-                                 .serviceMailBox(serviceMailBox)
-                                 .serviceUrl(serviceUrl)
-                                 .build())
+            .personalisation(Personalisation.personalisationRequestWith().ccdCaseNumber(CCD_CASE_NUMBER).refundReference("RF-1234-1234-1234-1234").refundAmount(
+                BigDecimal.valueOf(10)).refundReason("test").build())
+
             .build();
 
         final Response responseNotificationEmail = notificationsTestServicel.postEmailNotification(
@@ -189,12 +193,10 @@ public class NotificationsServiceFunctionalTest {
                                         .build())
             .reference("test reference")
             .notificationType(NotificationType.LETTER)
-            .personalisation(Personalisation.personalisationRequestWith()
-                                 .ccdCaseNumber(CCD_CASE_NUMBER)
-                                 .refundReference("test reference")
-                                 .serviceMailBox(serviceMailBox)
-                                 .serviceUrl(serviceUrl)
-                                 .build())
+            .serviceName("Probate")
+            .personalisation(Personalisation.personalisationRequestWith().ccdCaseNumber(CCD_CASE_NUMBER).refundReference("RF-1234-1234-1234-1234").refundAmount(
+                BigDecimal.valueOf(10)).refundReason("test").build())
+
             .build();
 
         final Response responseNotificationLetter = notificationsTestServicel.postLetterNotification(
@@ -215,12 +217,10 @@ public class NotificationsServiceFunctionalTest {
             .reference(REFERENCE)
             .emailReplyToId(emailReplyToId)
             .notificationType(NotificationType.EMAIL)
-            .personalisation(Personalisation.personalisationRequestWith()
-                                 .ccdCaseNumber(CCD_CASE_NUMBER)
-                                 .refundReference(REFERENCE)
-                                 .serviceMailBox(serviceMailBox)
-                                 .serviceUrl(serviceUrl)
-                                 .build())
+            .serviceName("Probate")
+            .personalisation(Personalisation.personalisationRequestWith().ccdCaseNumber(CCD_CASE_NUMBER).refundReference("RF-1234-1234-1234-1234").refundAmount(
+                BigDecimal.valueOf(10)).refundReason("test").build())
+
             .build();
 
         final Response responseNotificationEmail = notificationsTestServicel.postEmailNotification(
@@ -254,6 +254,114 @@ public class NotificationsServiceFunctionalTest {
         );
 
         assertThat(responseNotification.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND.value());
+    }
+
+    @Test
+    public void letterNotificationTemplateForSendRefund() {
+
+        DocPreviewRequest request = DocPreviewRequest.docPreviewRequestWith()
+            .notificationType(NotificationType.LETTER)
+            .recipientEmailAddress("test@hmcts.net")
+            .serviceName("Probate")
+            .personalisation(
+                Personalisation.personalisationRequestWith().ccdCaseNumber(CCD_CASE_NUMBER).refundAmount(
+                    BigDecimal.valueOf(10)).refundReason("test").refundReference("RF-1234-1234-1234-1234").build())
+            .paymentChannel("telephony")
+            .paymentMethod("card")
+            .recipientPostalAddress(RecipientPostalAddress.recipientPostalAddressWith().addressLine("abc").postalCode("123 456")
+                                        .county("london").country("UK").city("london").build())
+            .build();
+
+        final Response responseNotificationLetter = notificationsTestServicel.getTemplateNotificationPreview(
+            userTokenPaymentRefundApprover ,
+            serviceTokenPayBubble ,
+            testConfigProperties.baseTestUrl ,
+            request
+        );
+
+        NotificationTemplatePreviewResponse notificationTemplatePreviewResponse = responseNotificationLetter.getBody().as(NotificationTemplatePreviewResponse.class);
+        assertThat(notificationTemplatePreviewResponse.getTemplateType().equals("letter"));
+        assertThat(notificationTemplatePreviewResponse.getTemplateId().equals(cardPbaLetterTemplateId));
+    }
+
+    @Test
+    public void letterNotificationTemplateForRefundWhenContacted() {
+
+        DocPreviewRequest request = DocPreviewRequest.docPreviewRequestWith()
+            .notificationType(NotificationType.LETTER)
+            .recipientEmailAddress("test@hmcts.net")
+            .serviceName("Probate")
+            .personalisation(
+                Personalisation.personalisationRequestWith().ccdCaseNumber(CCD_CASE_NUMBER).refundAmount(
+                    BigDecimal.valueOf(10)).refundReason("test").refundReference("RF-1234-1234-1234-1234").build())
+            .paymentChannel("bull scan")
+            .paymentMethod("cash")
+            .recipientPostalAddress(RecipientPostalAddress.recipientPostalAddressWith().addressLine("abc").postalCode("123 456")
+                                        .county("london").country("UK").city("london").build())
+            .build();
+
+        final Response responseNotificationLetter = notificationsTestServicel.getTemplateNotificationPreview(
+            userTokenPaymentRefundApprover ,
+            serviceTokenPayBubble ,
+            testConfigProperties.baseTestUrl ,
+            request
+        );
+
+        NotificationTemplatePreviewResponse notificationTemplatePreviewResponse = responseNotificationLetter.getBody().as(NotificationTemplatePreviewResponse.class);
+        assertThat(notificationTemplatePreviewResponse.getTemplateType().equals("letter"));
+        assertThat(notificationTemplatePreviewResponse.getTemplateId().equals(chequePoCashLetterTemplateId));
+    }
+
+    @Test
+    public void emailNotificationTemplateForSendRefund() {
+
+        DocPreviewRequest request = DocPreviewRequest.docPreviewRequestWith()
+            .notificationType(NotificationType.EMAIL)
+            .recipientEmailAddress("test@hmcts.net")
+            .serviceName("Probate")
+            .personalisation(
+                Personalisation.personalisationRequestWith().ccdCaseNumber(CCD_CASE_NUMBER).refundAmount(
+                    BigDecimal.valueOf(10)).refundReason("test").refundReference("RF-1234-1234-1234-1234").build())
+            .paymentChannel("online")
+            .paymentMethod("card")
+            .build();
+
+        final Response responseNotificationLetter = notificationsTestServicel.getTemplateNotificationPreview(
+            userTokenPaymentRefundApprover ,
+            serviceTokenPayBubble ,
+            testConfigProperties.baseTestUrl ,
+            request
+        );
+
+        NotificationTemplatePreviewResponse notificationTemplatePreviewResponse = responseNotificationLetter.getBody().as(NotificationTemplatePreviewResponse.class);
+        assertThat(notificationTemplatePreviewResponse.getTemplateType().equals("email"));
+        assertThat(notificationTemplatePreviewResponse.getTemplateId().equals(cardPbaEmailTemplateId));
+    }
+
+    @Test
+    public void emailNotificationTemplateForRefundWhenContacted() {
+
+        DocPreviewRequest request = DocPreviewRequest.docPreviewRequestWith()
+            .notificationType(NotificationType.EMAIL)
+            .recipientEmailAddress("test@hmcts.net")
+            .serviceName("Probate")
+            .personalisation(
+                Personalisation.personalisationRequestWith().ccdCaseNumber(CCD_CASE_NUMBER).refundAmount(
+                    BigDecimal.valueOf(10)).refundReason("test").refundReference("RF-1234-1234-1234-1234").build())
+            .paymentChannel("bulk scan")
+            .paymentMethod("cash")
+            .build();
+
+        final Response responseNotificationLetter = notificationsTestServicel.getTemplateNotificationPreview(
+            userTokenPaymentRefundApprover ,
+            serviceTokenPayBubble ,
+            testConfigProperties.baseTestUrl ,
+            request
+        );
+
+        NotificationTemplatePreviewResponse notificationTemplatePreviewResponse = responseNotificationLetter.getBody().as(NotificationTemplatePreviewResponse.class);
+        assertThat(notificationTemplatePreviewResponse.getTemplateType().equals("email"));
+        assertThat(notificationTemplatePreviewResponse.getTemplateId().equals(chequePoCashEmailTemplateId));
     }
 
 }
