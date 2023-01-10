@@ -300,7 +300,7 @@ dependencies {
     exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
   }
 
-  testCompileOnly group : 'com.github.hmcts', name:'fortify-client', version:'1.2.1'
+  testCompile 'com.github.hmcts:fortify-client:1.2.1:all'
   testCompileOnly group :'org.projectlombok', name:'lombok', version:'1.18.22'
   testAnnotationProcessor group :'org.projectlombok', name:'lombok', version:'1.18.12'
   testImplementation group: 'org.testcontainers', name: 'postgresql', version: '1.15.1'
