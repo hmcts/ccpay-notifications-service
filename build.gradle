@@ -2,6 +2,7 @@ buildscript {
   repositories {
     mavenLocal()
     mavenCentral()
+    jcenter()
   }
   dependencies {
     classpath("net.serenity-bdd:serenity-gradle-plugin:2.0.83")
@@ -207,6 +208,7 @@ dependencyManagement {
 repositories {
   mavenLocal()
   mavenCentral()
+  jcenter()
   maven { url 'https://jitpack.io' }
 }
 
@@ -233,7 +235,7 @@ def versions = [
 ]
 
 task fortifyScan(type: JavaExec)  {
-  main = "uk.gov.hmcts.fortifyclient.FortifyClientMainApp"
+  mainClass = "uk.gov.hmcts.fortifyclient.FortifyClientMainApp"
   classpath += sourceSets.test.runtimeClasspath
   jvmArgs = ['--add-opens=java.base/java.lang.reflect=ALL-UNNAMED']
 }
@@ -248,6 +250,7 @@ configurations {
 dependencies {
 
   compileOnly 'com.sun.xml.bind:jaxb-osgi:2.3.1'
+  implementation 'com.github.hmcts:fortify-client:1.2.1:all'
   implementation 'junit:junit:4.13.1'
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-web'
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-actuator'
@@ -300,7 +303,6 @@ dependencies {
     exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
   }
 
-  testCompile 'com.github.hmcts:fortify-client:1.2.1:all'
   testCompileOnly group :'org.projectlombok', name:'lombok', version:'1.18.22'
   testAnnotationProcessor group :'org.projectlombok', name:'lombok', version:'1.18.12'
   testImplementation group: 'org.testcontainers', name: 'postgresql', version: '1.15.1'
