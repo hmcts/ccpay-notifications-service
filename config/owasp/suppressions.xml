@@ -189,6 +189,9 @@
       in request URIs passed to the library as java.net.URI object and pick the wrong target host for request execution.
     </notes>
     <cve>CVE-2020-13956</cve>
+    </suppress>
+  <suppress>
+    <cve>CVE-2021-4277</cve>
   </suppress>
   <suppress>
     <notes>
