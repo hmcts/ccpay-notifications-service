@@ -23,6 +23,7 @@ import static java.util.stream.Collectors.toList;
 public class IdamService {
     public static final String CMC_CITIZEN_GROUP = "cmc-private-beta";
     public static final String CMC_CASE_WORKER_GROUP = "caseworker";
+    public static final String REFUNDS_USER = "caseworker";
 
     public static final String BEARER = "Bearer ";
     public static final String AUTHORIZATION_CODE = "authorization_code";
@@ -63,17 +64,17 @@ public class IdamService {
 
     public ValidUser createUserWithSearchScope(String userGroup, String... roles) {
         String email = nextUserEmail();
+        System.out.println("testConfig.getTestUserPassword() "+testConfig.getTestUserPassword());
+        System.out.println("testConfig.getGeneratedUserEmailPattern   "+testConfig.getGeneratedUserEmailPattern());
         CreateUserRequest userRequest = userRequest(email, userGroup, roles);
-        LOG.info("idamApi : " + idamApi.toString());
-        LOG.info("userRequest : " + userRequest);
         try {
             idamApi.createUser(userRequest);
         } catch (Exception ex) {
+            LOG.error("ERROR in createUserWithSearchScope !!!");
             LOG.info(ex.getMessage());
         }
 
         String accessToken = authenticateUserWithSearchScope(email, testConfig.getTestUserPassword());
-
         return new ValidUser(email, accessToken);
     }
 
@@ -110,7 +111,8 @@ public class IdamService {
         LOG.info("username : " + username);
         LOG.info("password : " + password);
         LOG.info("base64Authorisation : " + base64Authorisation);
-        LOG.info("testConfig.getOauth2().getClientId() : " + testConfig.getOauth2().getClientId());
+        LOG.info("testConfig.getIdamPayBubbleClientID() : " + testConfig.getIdamPayBubbleClientID());
+        LOG.info("testConfig.getIdamPayBubbleClientSecret() : " + testConfig.getIdamPayBubbleClientSecret());
         LOG.info("testConfig.getOauth2().getRedirectUrl() : " + testConfig.getOauth2().getRedirectUrl());
 
         try {
@@ -124,6 +126,7 @@ public class IdamService {
 
             return BEARER + tokenExchangeResponse.getAccessToken();
         } catch (Exception ex) {
+            LOG.error("ERROR in authenticateUserWithSearchScope !!!");
             LOG.info(ex.getMessage());
         }
         return null;
