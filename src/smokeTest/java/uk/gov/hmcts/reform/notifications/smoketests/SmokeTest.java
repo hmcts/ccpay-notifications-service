@@ -1,6 +1,5 @@
 package uk.gov.hmcts.reform.notifications.smoketests;
 
-import io.restassured.RestAssured;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Before;
 import org.junit.jupiter.api.Test;
@@ -16,7 +15,6 @@ public class SmokeTest {
 
     @Before
     public void setup() {
-        RestAssured.baseURI = testUrl;
         log.info("Payments-Api base url is :{}", testUrl);
     }
 

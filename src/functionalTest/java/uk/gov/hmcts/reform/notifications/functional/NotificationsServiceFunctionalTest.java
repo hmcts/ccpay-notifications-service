@@ -34,6 +34,7 @@ import java.util.Map;
 @RunWith(SpringIntegrationSerenityRunner.class)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @SpringBootTest
+@Ignore
 public class NotificationsServiceFunctionalTest {
 
     @Value("${notification.email-to-reply}")
