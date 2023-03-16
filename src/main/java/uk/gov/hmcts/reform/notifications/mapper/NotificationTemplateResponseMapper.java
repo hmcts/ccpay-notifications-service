@@ -1,44 +1,28 @@
 package uk.gov.hmcts.reform.notifications.mapper;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.notifications.dtos.request.DocPreviewRequest;
 import uk.gov.hmcts.reform.notifications.dtos.response.FromTemplateContact;
 import uk.gov.hmcts.reform.notifications.dtos.response.NotificationTemplatePreviewResponse;
 import uk.gov.hmcts.reform.notifications.dtos.response.RecipientContact;
 import uk.gov.hmcts.reform.notifications.dtos.response.MailAddress;
+import uk.gov.hmcts.reform.notifications.model.ServiceContact;
 import uk.gov.service.notify.TemplatePreview;
 
 @Component
 public class NotificationTemplateResponseMapper {
 
-    @Value("${notify.template.from-details.email}")
-    private String notifyTemplateFromEmail;
-
-    @Value("${notify.template.from-details.mail.address-line}")
-    private String notifyTemplateFromMailAddressLine;
-
-    @Value("${notify.template.from-details.mail.county}")
-    private String notifyTemplateFromMailCounty;
-
-    @Value("${notify.template.from-details.mail.country}")
-    private String notifyTemplateFromMailCountry;
-
-    @Value("${notify.template.from-details.mail.city}")
-    private String notifyTemplateFromMailCity;
-
-    @Value("${notify.template.from-details.mail.post-code}")
-    private String notifyTemplateFromMailPostCode;
-
     private static final String EMAIL = "EMAIL";
     private static final String LETTER = "LETTER";
 
-    public NotificationTemplatePreviewResponse notificationPreviewResponse(TemplatePreview templatePreview, DocPreviewRequest docPreviewRequest){
+    public NotificationTemplatePreviewResponse notificationPreviewResponse(TemplatePreview templatePreview,
+                                                                           DocPreviewRequest docPreviewRequest,
+                                                                           ServiceContact serviceContact){
 
         return NotificationTemplatePreviewResponse.buildNotificationTemplatePreviewWith()
             .templateId(templatePreview.getId().toString())
             .templateType(templatePreview.getTemplateType())
-            .from(toFromMapper(docPreviewRequest))
+            .from(toFromMapper(docPreviewRequest.getNotificationType().name(), serviceContact))
             .html(toHtmlMapper(templatePreview))
             .recipientContact(toContactMapper(docPreviewRequest))
             .subject(templatePreview.getSubject().get())
@@ -75,57 +59,53 @@ public class NotificationTemplateResponseMapper {
         return email;
     }
 
-    private MailAddress toMailMapper(DocPreviewRequest docPreviewReques) {
+    private MailAddress toMailMapper(DocPreviewRequest docPreviewRequest) {
 
         MailAddress recipientMailAddress = null;
-        if(LETTER.equalsIgnoreCase(docPreviewReques.getNotificationType().name())) {
+        if(LETTER.equalsIgnoreCase(docPreviewRequest.getNotificationType().name())) {
 
             recipientMailAddress = MailAddress.buildRecipientMailAddressWith()
-                .addressLine(docPreviewReques.getRecipientPostalAddress().getAddressLine())
-                .city(docPreviewReques.getRecipientPostalAddress().getCity())
-                .county(docPreviewReques.getRecipientPostalAddress().getCounty())
-                .country(docPreviewReques.getRecipientPostalAddress().getCountry())
-                .postalCode(docPreviewReques.getRecipientPostalAddress().getPostalCode())
+                .addressLine(docPreviewRequest.getRecipientPostalAddress().getAddressLine())
+                .city(docPreviewRequest.getRecipientPostalAddress().getCity())
+                .county(docPreviewRequest.getRecipientPostalAddress().getCounty())
+                .country(docPreviewRequest.getRecipientPostalAddress().getCountry())
+                .postalCode(docPreviewRequest.getRecipientPostalAddress().getPostalCode())
                 .build();
         }
 
         return recipientMailAddress;
     }
 
-    private FromTemplateContact toFromMapper(DocPreviewRequest docPreviewRequest) {
+    public FromTemplateContact toFromMapper(String notificationType, ServiceContact serviceContact) {
 
         return FromTemplateContact.buildFromTemplateContactWith()
-            .fromEmailAddress(toFromEmailMapper(docPreviewRequest))
-            .fromMailAddress(toFromMailMapper(docPreviewRequest))
+            .fromEmailAddress(toFromEmailMapper(notificationType, serviceContact))
+            .fromMailAddress(toFromMailMapper(notificationType, serviceContact))
             .build();
     }
 
-    private String toFromEmailMapper(DocPreviewRequest docPreviewReques) {
+    private String toFromEmailMapper(String notificationType, ServiceContact serviceContact) {
 
         String email = null;
-        if(EMAIL.equalsIgnoreCase(docPreviewReques.getNotificationType().name())) {
-
-            email = notifyTemplateFromEmail;
-
+        if(EMAIL.equalsIgnoreCase(notificationType)) {
+           email = serviceContact.getFromEmailAddress();
         }
-
         return email;
     }
 
-    private MailAddress toFromMailMapper(DocPreviewRequest docPreviewReques) {
+    private MailAddress toFromMailMapper(String notificationType, ServiceContact serviceContact) {
 
         MailAddress fromMailAddress = null;
-        if(LETTER.equalsIgnoreCase(docPreviewReques.getNotificationType().name())) {
+        if(null != serviceContact.getFromMailAddress() && LETTER.equalsIgnoreCase(notificationType)){
 
             fromMailAddress = MailAddress.buildRecipientMailAddressWith()
-                .addressLine(notifyTemplateFromMailAddressLine)
-                .city(notifyTemplateFromMailCity)
-                .county(notifyTemplateFromMailCounty)
-                .country(notifyTemplateFromMailCountry)
-                .postalCode(notifyTemplateFromMailPostCode)
+                .addressLine(serviceContact.getFromMailAddress().getAddressLine())
+                .city(serviceContact.getFromMailAddress().getCity())
+                .county(serviceContact.getFromMailAddress().getCounty())
+                .country(serviceContact.getFromMailAddress().getCountry())
+                .postalCode(serviceContact.getFromMailAddress().getPostalCode())
                 .build();
         }
-
         return fromMailAddress;
     }
 

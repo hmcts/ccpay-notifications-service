@@ -85,7 +85,7 @@ security:
 trusted:
   s2s:
     service:
-      names: refunds_api,ccpay_bubble,xui_webapp
+      names: refunds_api,ccpay_bubble,api_gw,ccd_gw,xui_webapp
 auth:
   idam:
     client:
@@ -133,3 +133,8 @@ idam:
     url: ${AUTH_PROVIDER_SERVICE_CLIENT_BASEURL}
     totp_secret: ${OIDC_S2S_SECRET}
     microservice: ${OIDC_S2S_MICROSERVICE_NAME}
+
+postcodelookup:
+  api:
+    url: https://api.os.uk/search/places/v1
+    key: ${POSTCODE_ADDRESS_LOOKUP_ID:REPLACE_ME}
