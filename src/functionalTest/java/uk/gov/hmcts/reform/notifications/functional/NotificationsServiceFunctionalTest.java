@@ -104,7 +104,7 @@ public class NotificationsServiceFunctionalTest {
                 ("idam.user.ccpayrefundsapi@hmcts.net").getAuthorisationToken();
             serviceTokenPayBubble =
                 s2sTokenService.getS2sToken("ccpay_bubble", testConfigProperties.s2sPayBubble);
-
+            System.out.println("serviceTokenPayBubble ---> " + serviceTokenPayBubble);
             isTokensInitialized = true;
         }
     }
@@ -131,6 +131,8 @@ public class NotificationsServiceFunctionalTest {
             refundNotificationEmailRequest
         );
 
+        System.out.println("responseNotificationEmail ---> " + responseNotificationEmail.asString());
+        System.out.println("responseNotificationEmail.getStatusCode() ---> " + responseNotificationEmail.getStatusCode());
         assertThat(responseNotificationEmail.getStatusCode()).isEqualTo(HttpStatus.CREATED.value());
         deleteNotifications(reference);
     }
