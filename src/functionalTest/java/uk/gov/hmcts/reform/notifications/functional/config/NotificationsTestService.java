@@ -31,7 +31,6 @@ public class NotificationsTestService {
                                            final String serviceToken,
                                            final String baseUri,
                                            final RefundNotificationLetterRequest request) {
-        System.out.println("baseUri in NotificationsTestService >>   "+baseUri);
         return givenWithAuthHeaders(userToken, serviceToken)
             .contentType(ContentType.JSON)
             .body(request)
@@ -51,6 +50,13 @@ public class NotificationsTestService {
             .get("/notifications/{reference}", reference);
     }
 
+    public Response deleteNotification(final String userToken, final String serviceToken,
+                                       final String baseUri,
+                                 final String reference) {
+        return givenWithAuthHeaders(userToken, serviceToken).baseUri(baseUri).when()
+            .delete("/notifications/{reference}", reference);
+    }
+
     public RequestSpecification givenWithAuthHeaders(final String userToken, final String serviceToken) {
         return SerenityRest.given()
             .header(AUTHORIZATION, userToken)
@@ -67,6 +73,17 @@ public class NotificationsTestService {
             .body(request)
             .baseUri(baseUri)
             .when()
-            .post("/doc-preview");
+            .post("/notifications/doc-preview");
+    }
+
+    public Response getPostCodeLookup(final String userToken,
+                                    final String serviceToken,
+                                    final String baseUri,
+                                    final String postCode) {
+        return givenWithAuthHeaders(userToken, serviceToken)
+            .baseUri(baseUri)
+            .contentType(ContentType.JSON)
+            .when()
+            .get("/notifications/postcode-lookup/{postcode}", postCode);
     }
 }
