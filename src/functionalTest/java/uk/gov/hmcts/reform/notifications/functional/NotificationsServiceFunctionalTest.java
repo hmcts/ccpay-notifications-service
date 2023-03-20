@@ -102,10 +102,9 @@ public class NotificationsServiceFunctionalTest {
         if (!isTokensInitialized) {
             userTokenPaymentRefundApprover = idamService.createUserWithSearchScope
                 ("idam.user.ccpayrefundsapi@hmcts.net").getAuthorisationToken();
-            System.out.println("In setup testConfigProperties.s2sPayBubble ---> " + testConfigProperties.s2sPayBubble);
             serviceTokenPayBubble =
                 s2sTokenService.getS2sToken("ccpay_bubble", testConfigProperties.s2sPayBubble);
-            System.out.println("In setup serviceTokenPayBubble ---> " + serviceTokenPayBubble);
+
             isTokensInitialized = true;
         }
     }
