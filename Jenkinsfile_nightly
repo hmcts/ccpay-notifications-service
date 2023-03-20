@@ -14,8 +14,8 @@ properties([
 @Library("Infrastructure")
 
 def type = "java"
-def product = "rpe"
-def component = "spring-boot-template"
+def product = "ccpay"
+def component = "notifications-service"
 
 def secrets = [
   'ccpay-${env}': [
