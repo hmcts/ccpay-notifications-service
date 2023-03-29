@@ -277,9 +277,9 @@ public class NotificationServiceImpl implements NotificationService {
         NotificationTemplatePreviewResponse notificationTemplatePreviewResponse;
         String instructionType ;
         String refundRef = getRefundReference(docPreviewRequest);
-        LOG.info("Refund reference in previewNotification {}", refundRef);
+        LOG.info("Refund reference in previewNotification workflow {}", refundRef);
         String refundReason = getRefundReason(docPreviewRequest.getPersonalisation().getRefundReason());
-        LOG.info("Refund reason in previewNotification {}", refundReason);
+        LOG.info("Refund reason in previewNotification workflow {}", refundReason);
         String ccdCaseNumber;
         instructionType = getInstructionType(docPreviewRequest.getPaymentChannel(),docPreviewRequest.getPaymentMethod());
 
