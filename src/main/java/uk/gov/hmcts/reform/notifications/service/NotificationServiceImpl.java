@@ -120,7 +120,8 @@ public class NotificationServiceImpl implements NotificationService {
     public SendEmailResponse sendEmailNotification(RefundNotificationEmailRequest emailNotificationRequest, MultiValueMap<String, String> headers) {
         try {
             LOG.info("sendEmailNotification -->" +emailNotificationRequest.toString());
-
+            LOG.info("Reference in Email Endpoint {}",emailNotificationRequest.getReference());
+            LOG.info("Template Id  {}",emailNotificationRequest.getTemplateId());
             Optional<ServiceContact> serviceContactOptional = serviceContactRepository.findByServiceName(emailNotificationRequest.getServiceName());
             ServiceContact serviceContact = new ServiceContact();
 
@@ -277,9 +278,9 @@ public class NotificationServiceImpl implements NotificationService {
         NotificationTemplatePreviewResponse notificationTemplatePreviewResponse;
         String instructionType ;
         String refundRef = getRefundReference(docPreviewRequest);
-        LOG.info("Refund reference in previewNotification {}", refundRef);
+        LOG.info("Refund reference in previewNotification workflow {}", refundRef);
         String refundReason = getRefundReason(docPreviewRequest.getPersonalisation().getRefundReason());
-        LOG.info("Refund reason in previewNotification {}", refundReason);
+        LOG.info("Refund reason in previewNotification workflow {}", refundReason);
         String ccdCaseNumber;
         instructionType = getInstructionType(docPreviewRequest.getPaymentChannel(),docPreviewRequest.getPaymentMethod());
 
@@ -370,7 +371,7 @@ public class NotificationServiceImpl implements NotificationService {
         if(htmlOptional.isPresent() && !htmlOptional.isEmpty()) {
             html = htmlOptional.get();
         }
-
+        LOG.info("Body {}",templatePreview.getBody());
         return TemplatePreviewDto.templatePreviewDtoWith()
             .id(templatePreview.getId())
             .templateType(templatePreview.getTemplateType())
