@@ -218,24 +218,24 @@
     </notes>
     <cve>CVE-2022-1471</cve>
   </suppress>
-  <suppress>
+  <suppress until="2030-09-30">
     <notes>Google core has no version resolution for guava-31.0.1-jre.jar.
     </notes>
     <cve>CVE-2023-2976</cve>
   </suppress>
-  <suppress>
+  <suppress until="2030-09-30">
     <notes>jackson-databind has no version resolution
     </notes>
     <cve>CVE-2020-36518</cve>
     <cve>CVE-2021-46877</cve>
     <cve>CVE-2023-35116</cve>
   </suppress>
-  <suppress>
+  <suppress until="2030-09-30">
     <notes>liquibase-core-4.6.2.jar has no version resolution
     </notes>
     <cve>CVE-2022-0839</cve>
   </suppress>
-  <suppress>
+  <suppress until="2030-09-30">
     <notes>spring-aop-5.3.15.jarhas no version resolution
     </notes>
     <cve>CVE-2022-22965</cve>
@@ -247,4 +247,15 @@
     <cve>CVE-2022-22968</cve>
     <cve>CVE-2022-22970</cve>
   </suppress>
+  <suppress until="2030-09-30">
+    <notes>Spring Context requires major version update
+    </notes>
+    <cve>CVE-2023-20883</cve>
+  </suppress>
+  <suppress until="2030-09-30">
+    <notes>spring-security-config requires major version update
+    </notes>
+    <cve>CVE-2022-22976</cve>
+  </suppress>
+
 </suppressions>
