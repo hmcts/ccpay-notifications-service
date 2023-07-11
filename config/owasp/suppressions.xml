@@ -218,4 +218,21 @@
     </notes>
     <cve>CVE-2022-1471</cve>
   </suppress>
+  <suppress>
+    <notes>Google guava unavailable as no values for google-core
+    </notes>
+    <cve>CVE-2023-2976</cve>
+  </suppress>
+  <suppress>
+    <notes>jackson-databind package not available
+    </notes>
+    <cve>CVE-2020-36518</cve>
+    <cve>CVE-2021-46877</cve>
+    <cve>CVE-2023-35116</cve>
+  </suppress>
+  <suppress>
+    <notes>liquibase-core- package not available
+    </notes>
+    <cve>CVE-2022-0839/cve>
+  </suppress>
 </suppressions>
