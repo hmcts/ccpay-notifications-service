@@ -218,4 +218,33 @@
     </notes>
     <cve>CVE-2022-1471</cve>
   </suppress>
+  <suppress>
+    <notes>Google core has no version resolution for guava-31.0.1-jre.jar.
+    </notes>
+    <cve>CVE-2023-2976</cve>
+  </suppress>
+  <suppress>
+    <notes>jackson-databind has no version resolution
+    </notes>
+    <cve>CVE-2020-36518</cve>
+    <cve>CVE-2021-46877</cve>
+    <cve>CVE-2023-35116</cve>
+  </suppress>
+  <suppress>
+    <notes>liquibase-core-4.6.2.jar has no version resolution
+    </notes>
+    <cve>CVE-2022-0839</cve>
+  </suppress>
+  <suppress>
+    <notes>spring-aop-5.3.15.jarhas no version resolution
+    </notes>
+    <cve>CVE-2022-22965</cve>
+    <cve>CVE-2023-20860</cve>
+    <cve>CVE-2022-22950</cve>
+    <cve>CVE-2022-22971</cve>
+    <cve>CVE-2023-20861</cve>
+    <cve>CVE-2023-20863</cve>
+    <cve>CVE-2022-22968</cve>
+    <cve>CVE-2022-22970</cve>
+  </suppress>
 </suppressions>
