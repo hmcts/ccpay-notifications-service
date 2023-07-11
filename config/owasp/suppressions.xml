@@ -257,5 +257,9 @@
     </notes>
     <cve>CVE-2022-22976</cve>
   </suppress>
-
+  <suppress until="2030-09-30">
+    <notes>OAuth2 For Spring Security  requires major version update
+    </notes>
+    <cve>CVE-2022-22969</cve>
+  </suppress>
 </suppressions>
