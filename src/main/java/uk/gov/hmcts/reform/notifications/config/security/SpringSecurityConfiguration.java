@@ -34,7 +34,6 @@ import static org.springframework.security.config.http.SessionCreationPolicy.STA
 @SuppressWarnings("PMD")
 public class SpringSecurityConfiguration extends WebSecurityConfigurerAdapter {
 
-
     @Value("${spring.security.oauth2.client.provider.oidc.issuer-uri}")
     private String issuerUri;
 
@@ -42,22 +41,21 @@ public class SpringSecurityConfiguration extends WebSecurityConfigurerAdapter {
     private String issuerOverride;
 
     private ServiceAuthFilter serviceAuthFilter;
-    List<String> anonymousPaths;
 
     private JwtAuthenticationConverter jwtAuthenticationConverter;
 
-    public List<String> getAnonymousPaths() {
-        return anonymousPaths;
-    }
-
-    public void setAnonymousPaths(List<String> anonymousPaths) {
-        this.anonymousPaths = anonymousPaths;
-    }
-
     @Override
     public void configure(WebSecurity web) {
-        web.ignoring()
-            .antMatchers(anonymousPaths.toArray(new String[0]));
+        web.ignoring().antMatchers("/swagger-ui.html",
+                                   "/swagger-resources/**",
+                                   "/swagger-ui/**",
+                                   "/v3/**",
+                                   "/health",
+                                   "/health/liveness",
+                                   "/health/readiness",
+                                   "/info",
+                                   "/favicon.ico",
+                                   "/");
     }
 
     @Inject
