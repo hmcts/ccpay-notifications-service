@@ -52,6 +52,8 @@ withPipeline(type, product, component) {
   loadVaultSecrets(secrets)
   enableDbMigration('ccpay')
   enableAksStagingDeployment()
+  disableLegacyDeployment()
+  syncBranchesWithMaster(branchesToSync)
 
   afterAlways('test') {
 
@@ -61,7 +63,7 @@ withPipeline(type, product, component) {
       keepAll              : true,
       reportDir            : "build/reports/tests/test",
       reportFiles          : "index.html",
-      reportName           : "CCPAY NOTIFICATIONS PREVIEW Unit Tests Report"
+      reportName           : "CCPAY Notification Service Unit Tests Report"
     ]
 
   }
@@ -74,7 +76,7 @@ withPipeline(type, product, component) {
       alwaysLinkToLastBuild: true,
       keepAll              : true,
       reportFiles          : "index.html",
-      reportName           : "CCPAY NOTIFICATIONS PREVIEW API Functional Test Report"
+      reportName           : "CCPAY Notification Service Functional Test Report"
     ]
 
     publishHTML target: [
@@ -83,7 +85,7 @@ withPipeline(type, product, component) {
       keepAll              : true,
       reportDir            : "target/site/serenity/",
       reportFiles          : "index.html",
-      reportName           : "CCPAY NOTIFICATIONS SERVICE PREVIEW API Functional Test Serenity Report"
+      reportName           : "CCPAY Notification Service Functional Test Serenity Report"
     ]
   }
 
@@ -94,11 +96,9 @@ withPipeline(type, product, component) {
       keepAll              : true,
       reportDir            : "target/site/serenity/",
       reportFiles          : "index.html",
-      reportName           : "CCPAY NOTIFICATIONS SERVICE AAT Functional Tests Serenity Report"
+      reportName           : "CCPAY Notification Service Functional Tests AAT Serenity Report"
     ]
   }
 
-  disableLegacyDeployment()
-  //Sync demo,ithc and perftest with master branch
-  syncBranchesWithMaster(branchesToSync)
+  enableSlackNotifications('#fee-pay-nightly-pipeline')
 }
