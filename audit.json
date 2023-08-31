@@ -13,5 +13,6 @@
   "10096_Timestamp Disclosure - Unix_http://ccpay-notifications-service-aat.service.core-compute-aat.internal/sitemap.xml_GET":"ignore",
   "90033_Loosely Scoped Cookie_http://ccpay-notifications-service-aat.service.core-compute-aat.internal_GET":"ignore",
   "90033_Loosely Scoped Cookie_http://ccpay-notifications-service-aat.service.core-compute-aat.internal/_GET":"ignore",
-  "90033_Loosely Scoped Cookie_http://ccpay-notifications-service-aat.service.core-compute-aat.internal/robots.txt_GET":"ignore"
+  "90033_Loosely Scoped Cookie_http://ccpay-notifications-service-aat.service.core-compute-aat.internal/robots.txt_GET":"ignore",
+  "10049_Non-Storable Content_http://ccpay-notifications-service-aat.service.core-compute-aat.internal/v2/api-docs_GET": "ignore"
 }

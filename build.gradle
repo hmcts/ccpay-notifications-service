@@ -223,7 +223,7 @@ repositories {
 
 
 ext {
-  reformLoggingVersion = "5.1.9"
+  reformLoggingVersion = "6.0.1"
 }
 
 
