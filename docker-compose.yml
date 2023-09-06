@@ -29,10 +29,13 @@ services:
     container_name: ccpay-notifications-service-db
     image: postgres:11-alpine
     environment:
-      - POSTGRES_USER=notifications
-      - POSTGRES_PASSWORD=notifications
+      - POSTGRES_USER=${POSTGRES_USERNAME}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
       - POSTGRES_DB=notifications
     ports:
       - 5182:5432
     volumes:
       - ccpay-notifications-service-db-data:/var/lib/postgresql/data
+
+volumes:
+  ccpay-notifications-service-db-data:
