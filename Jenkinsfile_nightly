@@ -60,15 +60,54 @@ withNightlyPipeline(type, product, component) {
     steps.archiveArtifacts allowEmptyArchive: true, artifacts: '**/Fortify Scan/**/*'
   }
 
+  afterAlways('test') {
+    publishHTML target: [
+      allowMissing         : true,
+      alwaysLinkToLastBuild: true,
+      keepAll              : true,
+      reportDir            : "build/reports/checkstyle",
+      reportFiles          : "main.html",
+      reportName           : "CCPAY Notification Service Checkstyle Main Report"
+    ]
+
+    publishHTML target: [
+      allowMissing         : true,
+      alwaysLinkToLastBuild: true,
+      keepAll              : true,
+      reportDir            : "build/reports/checkstyle",
+      reportFiles          : "test.html",
+      reportName           : "CCPAY Notification Service Checkstyle Test Report"
+    ]
+
+    publishHTML target: [
+      allowMissing         : true,
+      alwaysLinkToLastBuild: true,
+      keepAll              : true,
+      reportDir            : "build/reports/checkstyle",
+      reportFiles          : "aat.html",
+      reportName           : "CCPAY Notification Service Checkstyle AAT Report"
+    ]
+
+    publishHTML target: [
+      allowMissing         : true,
+      alwaysLinkToLastBuild: true,
+      keepAll              : true,
+      reportDir            : "build/reports/tests/test",
+      reportFiles          : "index.html",
+      reportName           : "CCPAY Notification Service Unit Tests Report"
+    ]
+  }
+
   afterAlways('fullFunctionalTest') {
     steps.archiveArtifacts allowEmptyArchive: true, artifacts: '**/site/serenity/**/*'
     publishHTML target: [
       reportDir            : "target/site/serenity/",
       reportFiles          : "index.html",
-      reportName           : "AAT Functional Tests",
-      alwaysLinkToLastBuild: true
+      reportName           : "CCPAY Notification Service AAT Functional Tests",
+      allowMissing         : true,
+      alwaysLinkToLastBuild: true,
+      keepAll              : true
     ]
-
   }
 
   enableSlackNotifications('#fee-pay-nightly-pipeline')
