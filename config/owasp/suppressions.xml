@@ -128,5 +128,30 @@
     </notes>
     <cve>CVE-2023-0833</cve>
   </suppress>
+  <suppress>
+    <notes>
+      Incomplete Cleanup vulnerability in Apache Tomcat.
+    </notes>
+    <cve>CVE-2023-42794</cve>
+  </suppress>
+  <suppress>
+    <notes>
+      The HTTP/2 protocol allows a denial of service (server resource consumption) because request
+      cancellation can reset many streams quickly, as exploited in the wild in August through October 2023.
+    </notes>
+    <cve>CVE-2023-44487</cve>
+  </suppress>
+  <suppress>
+    <notes>
+      Incomplete Cleanup vulnerability in Apache Tomcat.
+    </notes>
+    <cve>CVE-2023-42795</cve>
+  </suppress>
+  <suppress>
+    <notes>
+      Improper Input Validation vulnerability in Apache Tomcat.
+    </notes>
+    <cve>CVE-2023-45648</cve>
+  </suppress>
 </suppressions>
 
