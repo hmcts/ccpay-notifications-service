@@ -111,7 +111,7 @@ resource "azurerm_key_vault_secret" "POSTGRES_PORT" {
 
 resource "azurerm_key_vault_secret" "POSTGRES_DATABASE" {
   name      = join("-", [var.component, "POSTGRES-DATABASE"])
-  value     = value     = var.database_name
+  value     = var.database_name
   key_vault_id = data.azurerm_key_vault.notifications_key_vault.id
 }
 
