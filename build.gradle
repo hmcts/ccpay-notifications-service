@@ -203,7 +203,7 @@ dependencyManagement {
     mavenBom "org.springframework.cloud:spring-cloud-dependencies:${springCloudVersion}"
   }
   dependencies {
-    dependency group: 'org.bouncycastle', name: 'bcpkix-jdk15on', version: '1.70'
+    dependency group: 'org.bouncycastle', name: 'bcpkix-jdk15on', version: '1.73'
     // CVE-2023-3635
     dependencySet(group: 'com.google.guava', version: '32.1.3-jre') {
       entry 'guava'
