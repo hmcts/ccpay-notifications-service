@@ -1,6 +1,11 @@
 provider "azurerm" {
-  features {}
+  features {
+    resource_group {
+       prevent_deletion_if_contains_resources = false
+    }
+  }
 }
+
 locals {
   # Api Management config
   api_mgmt_name     = join("-", ["core-api-mgmt", var.env])
@@ -19,34 +24,11 @@ locals {
   notifications_status_thumbprints_in_quotes_str = join(",", local.notifications_status_thumbprints_in_quotes)
 }
 
-#data "azurerm_key_vault" "notifications_key_vault" {
-#  name = "${local.vaultName}"
-#  resource_group_name = join("-", [var.core_product, var.env])
-#}
-
 data "azurerm_key_vault" "notifications_key_vault" {
   name = "${local.vaultName}"
   resource_group_name = join("-", [var.core_product, var.env])
 }
 
-// Database Infra
-module "notifications-service-database-v11" {
-  source = "git@github.com:hmcts/cnp-module-postgres?ref=master"
-  product = var.product
-  component = var.component
-  name = "${var.product}-${var.component}-postgres-db-v11"
-  location = var.location
-  env = var.env
-  postgresql_user = var.postgresql_user
-  database_name = var.database_name
-  sku_name = var.sku_name
-  sku_capacity = var.sku_capacity
-  sku_tier = "GeneralPurpose"
-  common_tags = var.common_tags
-  subscription = var.subscription
-  postgresql_version = var.postgresql_version
-  additional_databases = var.additional_databases
-}
 
 module "notifications-service-database-v15" {
   providers = {
@@ -115,37 +97,6 @@ resource "azurerm_key_vault_secret" "POSTGRES_DATABASE" {
   key_vault_id = data.azurerm_key_vault.notifications_key_vault.id
 }
 
-# Populate Vault with Flexible DB info
-
-resource "azurerm_key_vault_secret" "POSTGRES-USER-V15" {
-  name      = join("-", [var.component, "POSTGRES-USER-V15"])
-  value     = module.notifications-service-database-v15.username
-  key_vault_id = data.azurerm_key_vault.notifications_key_vault.id
-}
-
-resource "azurerm_key_vault_secret" "POSTGRES-PASS-V15" {
-  name      = join("-", [var.component, "POSTGRES-PASS-V15"])
-  value     = module.notifications-service-database-v15.password
-  key_vault_id = data.azurerm_key_vault.notifications_key_vault.id
-}
-
-resource "azurerm_key_vault_secret" "POSTGRES_HOST-V15" {
-  name      = join("-", [var.component, "POSTGRES-HOST-V15"])
-  value     = module.notifications-service-database-v15.fqdn
-  key_vault_id = data.azurerm_key_vault.notifications_key_vault.id
-}
-
-resource "azurerm_key_vault_secret" "POSTGRES_PORT-V15" {
-  name      = join("-", [var.component, "POSTGRES-PORT-V15"])
-  value     = var.postgresql_flexible_server_port
-  key_vault_id = data.azurerm_key_vault.notifications_key_vault.id
-}
-
-resource "azurerm_key_vault_secret" "POSTGRES_DATABASE-V15" {
-  name      = join("-", [var.component, "POSTGRES-DATABASE-V15"])
-  value     = var.database_name
-  key_vault_id = data.azurerm_key_vault.notifications_key_vault.id
-}
 
 data "azurerm_key_vault" "s2s_key_vault" {
   name                = local.s2s_key_vault_name
