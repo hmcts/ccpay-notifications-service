@@ -27,7 +27,7 @@ services:
 
   ccpay-notifications-service-db:
     container_name: ccpay-notifications-service-db
-    image: postgres:11-alpine
+    image: postgres:16-alpine
     environment:
       - POSTGRES_USER=notifications
       - POSTGRES_PASSWORD=notifications
