@@ -177,11 +177,5 @@
     </notes>
     <cve>CVE-2023-6378</cve>
   </suppress>
-  <suppress>
-    <notes>
-      pgjdbc, the PostgreSQL JDBC Driver, allows attacker to inject SQL if using PreferQueryMode=SIMPLE. Note this is not the default. In the default mode there is no vulnerability.
-    </notes>
-    <cve>CVE-2024-1597</cve>
-  </suppress>
 </suppressions>
 
