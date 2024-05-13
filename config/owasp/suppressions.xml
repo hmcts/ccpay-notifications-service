@@ -31,7 +31,6 @@
     <cve>CVE-2021-29425</cve>
     <cve>CVE-2020-13956</cve>
     <cve>CVE-2018-20200</cve>
-    <cve>CVE-2022-25647</cve>
   </suppress>
   <suppress>
     <notes>
