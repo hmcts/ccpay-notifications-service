@@ -96,19 +96,6 @@
   </suppress>
   <suppress>
     <notes>
-      GzipSource does not handle an exception that might be raised when parsing a malformed gzip buffer. This may lead to denial of service
-      of the Okio client when handling a crafted GZIP archive, by using the GzipSource class.
-    </notes>
-    <cve>CVE-2023-3635</cve>
-  </suppress>
-  <suppress>
-    <notes>
-      URL Redirection to Untrusted Site ('Open Redirect') vulnerability in FORM authentication feature Apache Tomcat.
-    </notes>
-    <cve>CVE-2023-41080</cve>
-  </suppress>
-  <suppress>
-    <notes>
       A flaw was found in Red Hat's AMQ-Streams, which ships a version of the OKHttp component with an information disclosure
       flaw via an exception triggered by a header containing an illegal value.
       This issue could allow an authenticated attacker to access information outside of their regular permissions.
