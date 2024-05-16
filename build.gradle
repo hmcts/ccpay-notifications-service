@@ -285,7 +285,7 @@ dependencies {
 
   implementation group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.23.0'
   implementation group: 'org.apache.logging.log4j', name: 'log4j-to-slf4j', version: '2.23.0'
-  implementation 'org.projectlombok:lombok:1.18.30'
+  implementation 'org.projectlombok:lombok:1.18.32'
 
   implementation group: 'org.springframework.security', name: 'spring-security-web'
   implementation group: 'org.springframework.security', name: 'spring-security-config'
@@ -313,8 +313,8 @@ dependencies {
     exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
   }
 
-  testImplementation group :'org.projectlombok', name:'lombok', version:'1.18.30'
-  testAnnotationProcessor group :'org.projectlombok', name:'lombok', version:'1.18.30'
+  testImplementation group :'org.projectlombok', name:'lombok', version:'1.18.32'
+  testAnnotationProcessor group :'org.projectlombok', name:'lombok', version:'1.18.32'
   testImplementation group: 'org.testcontainers', name: 'postgresql', version: '1.19.6'
 
   integrationTestImplementation sourceSets.main.runtimeClasspath
@@ -323,11 +323,11 @@ dependencies {
   smokeTestImplementation group: 'io.rest-assured', name: 'rest-assured', version: '5.4.0'
   smokeTestImplementation sourceSets.main.runtimeClasspath
   smokeTestImplementation sourceSets.test.runtimeClasspath
-  smokeTestImplementation group :'org.projectlombok', name:'lombok', version:'1.18.30'
-  smokeTestAnnotationProcessor group :'org.projectlombok', name:'lombok', version:'1.18.30'
+  smokeTestImplementation group :'org.projectlombok', name:'lombok', version:'1.18.32'
+  smokeTestAnnotationProcessor group :'org.projectlombok', name:'lombok', version:'1.18.32'
 
-  functionalTestAnnotationProcessor 'org.projectlombok:lombok:1.18.30'
-  functionalTestAnnotationProcessor group :'org.projectlombok', name:'lombok', version:'1.18.30'
+  functionalTestAnnotationProcessor 'org.projectlombok:lombok:1.18.32'
+  functionalTestAnnotationProcessor group :'org.projectlombok', name:'lombok', version:'1.18.32'
   functionalTestImplementation group: 'net.serenity-bdd', name: 'serenity-core', version: versions.serenity
   functionalTestImplementation group: 'net.serenity-bdd', name: 'serenity-cucumber', version: versions.serenityCucumber
   functionalTestImplementation group: 'net.serenity-bdd', name: 'serenity-junit', version: versions.serenity
