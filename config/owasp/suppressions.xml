@@ -31,7 +31,6 @@
     <cve>CVE-2021-29425</cve>
     <cve>CVE-2020-13956</cve>
     <cve>CVE-2018-20200</cve>
-    <cve>CVE-2022-25647</cve>
   </suppress>
   <suppress>
     <notes>
@@ -94,19 +93,6 @@
       susceptible to a security bypass.
     </notes>
     <cve>CVE-2023-20873</cve>
-  </suppress>
-  <suppress>
-    <notes>
-      GzipSource does not handle an exception that might be raised when parsing a malformed gzip buffer. This may lead to denial of service
-      of the Okio client when handling a crafted GZIP archive, by using the GzipSource class.
-    </notes>
-    <cve>CVE-2023-3635</cve>
-  </suppress>
-  <suppress>
-    <notes>
-      URL Redirection to Untrusted Site ('Open Redirect') vulnerability in FORM authentication feature Apache Tomcat.
-    </notes>
-    <cve>CVE-2023-41080</cve>
   </suppress>
   <suppress>
     <notes>

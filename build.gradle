@@ -258,13 +258,10 @@ configurations {
 }
 
 dependencies {
-
   implementation 'com.sun.xml.bind:jaxb-osgi:4.0.4'
-  implementation 'com.github.hmcts:fortify-client:1.4.1:all'
   implementation 'junit:junit:4.13.2'
 
   implementation group: 'org.springframework.security', name: 'spring-security-rsa', version: '1.1.1'
-
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-web'
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-actuator'
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-aop'
@@ -289,8 +286,7 @@ dependencies {
   implementation group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.23.0'
   implementation group: 'org.apache.logging.log4j', name: 'log4j-to-slf4j', version: '2.23.0'
   implementation 'org.projectlombok:lombok:1.18.30'
-  //implementation group: 'io.github.openfeign', name: 'feign-jackson', version: '10.1.0'
-  //implementation group: 'io.github.openfeign', name: 'feign-httpclient', version: '11.2'
+
   implementation group: 'org.springframework.security', name: 'spring-security-web'
   implementation group: 'org.springframework.security', name: 'spring-security-config'
   implementation group: 'com.nimbusds', name: 'nimbus-jose-jwt', version: '9.37.3'
@@ -311,6 +307,7 @@ dependencies {
 
   testImplementation(platform('org.junit:junit-bom:5.10.2'))
   testImplementation group: 'org.apiguardian', name: 'apiguardian-api', version: '1.1.2'
+  testImplementation 'com.github.hmcts:fortify-client:1.4.1:all'
   testImplementation group: 'org.springframework.boot', name: 'spring-boot-starter-test', {
     exclude group: 'junit', module: 'junit'
     exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
