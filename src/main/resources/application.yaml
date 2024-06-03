@@ -40,17 +40,17 @@ spring:
       remove-abandoned-timeout: 60
       log-abandoned: true
       abandon-when-percentage-full: 0
-  security:
-    oauth2:
-      client:
-        provider:
-          oidc:
-            issuer-uri: ${ISSUER_URI}
-        # Dummy OIDC client required even we are not going to use
-        registration:
-          oidc:
-            client-id: ${OIDC_CLIENT_ID}
-            client-secret: ${OIDC_CLIENT_SECRET}
+#  security:
+#    oauth2:
+#      client:
+#        provider:
+#          oidc:
+#            issuer-uri: ${ISSUER_URI}
+#        # Dummy OIDC client required even we are not going to use
+#        registration:
+#          oidc:
+#            client-id: ${OIDC_CLIENT_ID}
+#            client-secret: ${OIDC_CLIENT_SECRET}
   jpa:
     properties:
       hibernate:
