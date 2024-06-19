@@ -1,0 +1,31 @@
+databaseChangeLog:
+  - changeSet:
+      id: 100014
+      author: osmith
+      changes:
+        - sql:
+            splitStatements: true
+            sql: >
+              UPDATE service_contact SET
+                from_email_address = 'adoptionproject@justice.gov.uk'
+                WHERE service_name = 'Adoption';
+  - changeSet:
+      id: 100014-1
+      author: osmith
+      changes:
+        - sql:
+            splitStatements: true
+            sql: >
+              UPDATE service_contact SET
+                service_mailbox = 'adoption@justice.gov.uk'
+                WHERE service_name = 'Adoption';
+  - changeSet:
+      id: 100014-2
+      author: osmith
+      changes:
+        - sql:
+            splitStatements: true
+            sql: >
+              UPDATE service_contact SET
+                service_mailbox = 'adoptionproject@justice.gov.uk'
+                WHERE service_name = 'Adoption';
