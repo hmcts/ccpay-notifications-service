@@ -258,7 +258,7 @@ configurations {
 }
 
 dependencies {
-  implementation 'com.sun.xml.bind:jaxb-osgi:4.0.4'
+  implementation 'com.sun.xml.bind:jaxb-osgi:4.0.5'
   implementation 'junit:junit:4.13.2'
 
   implementation group: 'org.springframework.security', name: 'spring-security-rsa', version: '1.1.1'
