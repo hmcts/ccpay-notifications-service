@@ -275,7 +275,7 @@ dependencies {
   implementation group: 'org.springdoc', name: 'springdoc-openapi-webmvc-core', version: '1.7.0'
 
   implementation group: 'com.vladmihalcea', name: 'hibernate-types-55', version: '2.21.1'
-  implementation group: 'org.liquibase', name: 'liquibase-core', version: '4.26.0'
+  implementation group: 'org.liquibase', name: 'liquibase-core', version: '4.29.0'
   implementation group: 'org.postgresql', name: 'postgresql', version: '42.7.3'
   implementation group: 'com.google.guava', name: 'guava', version: '33.0.0-jre'
 
