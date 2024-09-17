@@ -7,10 +7,6 @@ provider "azurerm" {
 }
 
 locals {
-  # Api Management config
-  api_mgmt_name     = join("-", ["core-api-mgmt", var.env])
-  api_mgmt_rg       = join("-", ["core-infra", var.env])
-
   app_full_name = "${var.product}-${var.component}"
 
   vaultName = join("-", [var.core_product, var.env])
@@ -19,9 +15,6 @@ locals {
   s2s_key_vault_name          = var.env == "preview" || var.env == "spreview" ? join("-", ["s2s", "aat"]) : join("-", ["s2s", var.env])
   s2s_vault_resource_group    = var.env == "preview" || var.env == "spreview" ? join("-", [local.s2s_rg_prefix, "aat"]) : join("-", [local.s2s_rg_prefix, var.env])
   notifications_service_url = join("", ["http://notifications-service-", var.env, ".service.core-compute-", var.env, ".internal"])
-  # list of the thumbprints of the SSL certificates that should be accepted by the refund status API (gateway)
-  notifications_status_thumbprints_in_quotes = formatlist("&quot;%s&quot;", var.notifications_service_gateway_certificate_thumbprints)
-  notifications_status_thumbprints_in_quotes_str = join(",", local.notifications_status_thumbprints_in_quotes)
 }
 
 data "azurerm_key_vault" "notifications_key_vault" {
