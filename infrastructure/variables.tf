@@ -68,11 +68,6 @@ variable "postgresql_flexible_server_port" {
   default = "5432"
 }
 
-variable "notifications_service_gateway_certificate_thumbprints" {
-  type    = list(any)
-  default = [] # TODO: remove default and provide environment-specific values
-}
-
 variable "product_name" {
   type    = string
   default = "notifications"
