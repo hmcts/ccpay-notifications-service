@@ -272,7 +272,7 @@ dependencies {
   implementation group: 'uk.gov.service.notify', name: 'notifications-java-client', version: '5.0.0-RELEASE'
 
   implementation group: 'org.springdoc', name: 'springdoc-openapi-ui', version: '1.7.0'
-  implementation group: 'org.springdoc', name: 'springdoc-openapi-webmvc-core', version: '1.7.0'
+  implementation group: 'org.springdoc', name: 'springdoc-openapi-webmvc-core', version: '1.8.0'
 
   implementation group: 'com.vladmihalcea', name: 'hibernate-types-55', version: '2.21.1'
   implementation group: 'org.liquibase', name: 'liquibase-core', version: '4.26.0'
