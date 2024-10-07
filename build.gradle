@@ -307,7 +307,7 @@ dependencies {
 
   testImplementation(platform('org.junit:junit-bom:5.10.3'))
   testImplementation group: 'org.apiguardian', name: 'apiguardian-api', version: '1.1.2'
-  testImplementation 'com.github.hmcts:fortify-client:1.4.3:all'
+  testImplementation 'com.github.hmcts:fortify-client:1.4.4:all'
   testImplementation group: 'org.springframework.boot', name: 'spring-boot-starter-test', {
     exclude group: 'junit', module: 'junit'
     exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
