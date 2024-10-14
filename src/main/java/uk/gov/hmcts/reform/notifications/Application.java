@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.notifications;
 
+import com.microsoft.applicationinsights.attach.ApplicationInsights;
 import io.swagger.v3.oas.annotations.OpenAPIDefinition;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -10,6 +11,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 public class Application {
 
     public static void main(final String[] args) {
+        ApplicationInsights.attach();
         SpringApplication.run(Application.class, args);
     }
 }
