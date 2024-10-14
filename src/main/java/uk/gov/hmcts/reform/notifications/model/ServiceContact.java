@@ -1,13 +1,12 @@
 package uk.gov.hmcts.reform.notifications.model;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Table;
-
-import com.vladmihalcea.hibernate.type.json.JsonType;
+import io.hypersistence.utils.hibernate.type.json.JsonType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -15,7 +14,6 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import org.hibernate.annotations.Type;
-import org.hibernate.annotations.TypeDef;
 import uk.gov.hmcts.reform.notifications.dtos.response.MailAddress;
 
 @Entity
@@ -26,7 +24,6 @@ import uk.gov.hmcts.reform.notifications.dtos.response.MailAddress;
 @AllArgsConstructor
 @NoArgsConstructor
 @Table(name = "service_contact")
-@TypeDef(name = "json", typeClass = JsonType.class)
 public class ServiceContact {
 
     @Id
@@ -42,7 +39,7 @@ public class ServiceContact {
     @Column(name = "from_email_address")
     private String fromEmailAddress;
 
-    @Type(type = "json")
+    @Type(JsonType.class)
     @Column(columnDefinition = "json", name = "from_mail_address")
     private MailAddress fromMailAddress;
 }

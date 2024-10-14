@@ -1,9 +1,6 @@
 package uk.gov.hmcts.reform.notifications.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.math.BigDecimal;
-import java.util.*;
-import java.util.function.Supplier;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -31,33 +28,48 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.util.UriComponentsBuilder;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
-import uk.gov.hmcts.reform.notifications.dtos.request.DocPreviewRequest;
-import uk.gov.hmcts.reform.notifications.dtos.response.*;
-import uk.gov.hmcts.reform.notifications.mapper.NotificationTemplateResponseMapper;
-import uk.gov.hmcts.reform.notifications.model.ContactDetails;
-import uk.gov.hmcts.reform.notifications.model.NotificationRefundReasons;
-import uk.gov.hmcts.reform.notifications.model.ServiceContact;
-import uk.gov.hmcts.reform.notifications.model.TemplatePreviewDto;
-import uk.gov.hmcts.reform.notifications.repository.NotificationRefundReasonRepository;
-import uk.gov.hmcts.reform.notifications.repository.ServiceContactRepository;
-import uk.gov.hmcts.reform.notifications.service.NotificationServiceImplTest;
 import uk.gov.hmcts.reform.notifications.config.security.idam.IdamServiceImpl;
 import uk.gov.hmcts.reform.notifications.dtos.enums.NotificationType;
+import uk.gov.hmcts.reform.notifications.dtos.request.DocPreviewRequest;
 import uk.gov.hmcts.reform.notifications.dtos.request.Personalisation;
 import uk.gov.hmcts.reform.notifications.dtos.request.RecipientPostalAddress;
 import uk.gov.hmcts.reform.notifications.dtos.request.RefundNotificationEmailRequest;
 import uk.gov.hmcts.reform.notifications.dtos.request.RefundNotificationLetterRequest;
+import uk.gov.hmcts.reform.notifications.dtos.response.FromTemplateContact;
+import uk.gov.hmcts.reform.notifications.dtos.response.IdamUserIdResponse;
+import uk.gov.hmcts.reform.notifications.dtos.response.MailAddress;
+import uk.gov.hmcts.reform.notifications.dtos.response.NotificationResponseDto;
+import uk.gov.hmcts.reform.notifications.dtos.response.NotificationTemplatePreviewResponse;
+import uk.gov.hmcts.reform.notifications.mapper.NotificationTemplateResponseMapper;
+import uk.gov.hmcts.reform.notifications.model.ContactDetails;
 import uk.gov.hmcts.reform.notifications.model.Notification;
+import uk.gov.hmcts.reform.notifications.model.NotificationRefundReasons;
+import uk.gov.hmcts.reform.notifications.model.ServiceContact;
+import uk.gov.hmcts.reform.notifications.model.TemplatePreviewDto;
+import uk.gov.hmcts.reform.notifications.repository.NotificationRefundReasonRepository;
 import uk.gov.hmcts.reform.notifications.repository.NotificationRepository;
+import uk.gov.hmcts.reform.notifications.repository.ServiceContactRepository;
 import uk.gov.hmcts.reform.notifications.service.NotificationServiceImpl;
-import uk.gov.service.notify.*;
+import uk.gov.hmcts.reform.notifications.service.NotificationServiceImplTest;
+import uk.gov.service.notify.NotificationClientApi;
+import uk.gov.service.notify.NotificationClientException;
+import uk.gov.service.notify.SendEmailResponse;
+import uk.gov.service.notify.SendLetterResponse;
+import uk.gov.service.notify.TemplatePreview;
 
-import static org.mockito.ArgumentMatchers.anyMap;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+import java.util.function.Supplier;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyMap;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.setup.MockMvcBuilders.webAppContextSetup;
@@ -159,9 +171,9 @@ public class NotificationControllerTest {
         .build();
 
     @Test
-    public void createEmailNotificationReturnSuccess() throws Exception {
+    void createEmailNotificationReturnSuccess() throws Exception {
         mockUserinfoCall(idamUserIDResponseSupplier.get());
-        RefundNotificationEmailRequest request = RefundNotificationEmailRequest.refundNotificationEmailRequestWith()
+        final RefundNotificationEmailRequest request = RefundNotificationEmailRequest.refundNotificationEmailRequestWith()
             .notificationType(NotificationType.EMAIL)
             .templateId("test")
             .reference("REF-123")
@@ -171,22 +183,29 @@ public class NotificationControllerTest {
                     BigDecimal.valueOf(10)).refundReason("test").build())
             .serviceName("Probate")
             .build();
-        when(serviceContactRepository.findByServiceName(any())).thenReturn(Optional.of(ServiceContact.serviceContactWith().id(1).serviceName("Probate").serviceMailbox("probate@gov.uk").build()));
+        when(serviceContactRepository.findByServiceName(any()))
+            .thenReturn(Optional.of(ServiceContact.serviceContactWith().id(1).serviceName("Probate").serviceMailbox("probate@gov.uk").build()));
         mockGenerateEmailTemplatePreview();
-        SendEmailResponse response = new SendEmailResponse("{\"content\":{\"body\":\"Hello Unknown, your reference is string\\r\\n\\r\\nRefund Approved\\" +
-                                                               "r\\n\\r\\nThanks\",\"from_email\":\"test@gov.uk\",\"subject\":" +
-                                                               "\"Refund Notification Approval\"},\"id\":\"10f101e0-6ab8-4a83-8ebd-124d648dd282\"," +
-                                                               "\"reference\":\"string\",\"scheduled_for\":null,\"template\":" +
-                                                               "{\"id\":\"10f101e0-6ab8-4a83-8ebd-124d648dd282\",\"uri\":" +
-                                                               "\"https://api.notifications.service.gov.uk/services\"" +
-                                                               ",\"version\":1},\"uri\":\"https://api.notifications.service.gov.uk\"}\n");
+        SendEmailResponse response = new SendEmailResponse(
+                "{\"content\":{\"body\":\"Hello Unknown, your reference is string\\r\\n\\r\\nRefund Approved\\"
+                + "r\\n\\r\\nThanks\",\"from_email\":\"test@gov.uk\",\"subject\":"
+                + "\"Refund Notification Approval\"},\"id\":\"10f101e0-6ab8-4a83-8ebd-124d648dd282\","
+                + "\"reference\":\"string\",\"scheduled_for\":null,\"template\":"
+                + "{\"id\":\"10f101e0-6ab8-4a83-8ebd-124d648dd282\",\"uri\":"
+                + "\"https://api.notifications.service.gov.uk/services\""
+                + ",\"version\":1},\"uri\":\"https://api.notifications.service.gov.uk\"}\n");
         Notification notification = Notification.builder().build();
 
         when(notificationEmailClient.sendEmail(any(), any(), any(), any())).thenReturn(response);
         when(notificationRepository.save(notification)).thenReturn(notification);
-        when(notificationRefundReasonRepository.findByRefundReasonCode(any())).thenReturn(Optional.of(NotificationRefundReasons.notificationRefundReasonWith().refundReasonNotification("There has been an amendment to your claim").build()
+        when(notificationRefundReasonRepository.findByRefundReasonCode(any()))
+            .thenReturn(Optional.of(
+                NotificationRefundReasons
+                    .notificationRefundReasonWith()
+                    .refundReasonNotification("There has been an amendment to your claim")
+                    .build()
         ));
-        MvcResult result = mockMvc.perform(post("/notifications/email")
+        mockMvc.perform(post("/notifications/email")
                                                .content(asJsonString(request))
                                                .header("Authorization", "user")
                                                .header("ServiceAuthorization", "Services")
@@ -197,9 +216,9 @@ public class NotificationControllerTest {
     }
 
     @Test
-    public void createEmailNotificationReturnSuccessWhenReasonIsUnableToRefundToCard() throws Exception {
+    void createEmailNotificationReturnSuccessWhenReasonIsUnableToRefundToCard() throws Exception {
         mockUserinfoCall(idamUserIDResponseSupplier.get());
-        RefundNotificationEmailRequest request = RefundNotificationEmailRequest.refundNotificationEmailRequestWith()
+        final RefundNotificationEmailRequest request = RefundNotificationEmailRequest.refundNotificationEmailRequestWith()
             .notificationType(NotificationType.EMAIL)
             .templateId("test")
             .reference("REF-123")
@@ -227,20 +246,26 @@ public class NotificationControllerTest {
         when(notificationRepository.findByReferenceAndNotificationTypeOrderByDateUpdatedDesc(any(), any())).thenReturn(
             Optional.of(notificationList));
 
-        SendEmailResponse response = new SendEmailResponse("{\"content\":{\"body\":\"Hello Unknown, your reference is string\\r\\n\\r\\nRefund Approved\\" +
-                                                               "r\\n\\r\\nThanks\",\"from_email\":\"test@gov.uk\",\"subject\":" +
-                                                               "\"Refund Notification Approval\"},\"id\":\"10f101e0-6ab8-4a83-8ebd-124d648dd282\"," +
-                                                               "\"reference\":\"string\",\"scheduled_for\":null,\"template\":" +
-                                                               "{\"id\":\"10f101e0-6ab8-4a83-8ebd-124d648dd282\",\"uri\":" +
-                                                               "\"https://api.notifications.service.gov.uk/services\"" +
-                                                               ",\"version\":1},\"uri\":\"https://api.notifications.service.gov.uk\"}\n");
+        SendEmailResponse response = new SendEmailResponse(
+            "{\"content\":{\"body\":\"Hello Unknown, your reference is string\\r\\n\\r\\nRefund Approved\\"
+                + "r\\n\\r\\nThanks\",\"from_email\":\"test@gov.uk\",\"subject\":"
+                + "\"Refund Notification Approval\"},\"id\":\"10f101e0-6ab8-4a83-8ebd-124d648dd282\","
+                + "\"reference\":\"string\",\"scheduled_for\":null,\"template\":"
+                + "{\"id\":\"10f101e0-6ab8-4a83-8ebd-124d648dd282\",\"uri\":"
+                + "\"https://api.notifications.service.gov.uk/services\""
+                + ",\"version\":1},\"uri\":\"https://api.notifications.service.gov.uk\"}\n");
         Notification notification = Notification.builder().build();
 
         when(notificationEmailClient.sendEmail(any(), any(), any(), any())).thenReturn(response);
         when(notificationRepository.save(notification)).thenReturn(notification);
-        when(notificationRefundReasonRepository.findByRefundReasonCode(any())).thenReturn(Optional.of(NotificationRefundReasons.notificationRefundReasonWith().refundReasonNotification("There has been an amendment to your claim").build()
+        when(notificationRefundReasonRepository.findByRefundReasonCode(any()))
+            .thenReturn(Optional.of(
+                NotificationRefundReasons
+                    .notificationRefundReasonWith()
+                    .refundReasonNotification("There has been an amendment to your claim")
+                    .build()
         ));
-        MvcResult result = mockMvc.perform(post("/notifications/email")
+        mockMvc.perform(post("/notifications/email")
                                                .content(asJsonString(request))
                                                .header("Authorization", "user")
                                                .header("ServiceAuthorization", "Services")
@@ -252,9 +277,9 @@ public class NotificationControllerTest {
 
 
     @Test
-    public void createEmailNotificationReturn400ErrorWhenReasonIsUnableToRefundToCard() throws Exception {
+    void createEmailNotificationReturn400ErrorWhenReasonIsUnableToRefundToCard() throws Exception {
         mockUserinfoCall(idamUserIDResponseSupplier.get());
-        RefundNotificationEmailRequest request = RefundNotificationEmailRequest.refundNotificationEmailRequestWith()
+        final RefundNotificationEmailRequest request = RefundNotificationEmailRequest.refundNotificationEmailRequestWith()
             .notificationType(NotificationType.EMAIL)
             .templateId("test")
             .reference("REF-123")
@@ -282,19 +307,20 @@ public class NotificationControllerTest {
         when(notificationRepository.findByReferenceAndNotificationTypeOrderByDateUpdatedDesc(any(), any())).thenReturn(
             Optional.of(notificationList));
 
-        SendEmailResponse response = new SendEmailResponse("{\"content\":{\"body\":\"Hello Unknown, your reference is string\\r\\n\\r\\nRefund Approved\\" +
-                                                               "r\\n\\r\\nThanks\",\"from_email\":\"test@gov.uk\",\"subject\":" +
-                                                               "\"Refund Notification Approval\"},\"id\":\"10f101e0-6ab8-4a83-8ebd-124d648dd282\"," +
-                                                               "\"reference\":\"string\",\"scheduled_for\":null,\"template\":" +
-                                                               "{\"id\":\"10f101e0-6ab8-4a83-8ebd-124d648dd282\",\"uri\":" +
-                                                               "\"https://api.notifications.service.gov.uk/services\"" +
-                                                               ",\"version\":1},\"uri\":\"https://api.notifications.service.gov.uk\"}\n");
+        SendEmailResponse response = new SendEmailResponse(
+            "{\"content\":{\"body\":\"Hello Unknown, your reference is string\\r\\n\\r\\nRefund Approved\\"
+                + "r\\n\\r\\nThanks\",\"from_email\":\"test@gov.uk\",\"subject\":"
+                + "\"Refund Notification Approval\"},\"id\":\"10f101e0-6ab8-4a83-8ebd-124d648dd282\","
+                + "\"reference\":\"string\",\"scheduled_for\":null,\"template\":"
+                + "{\"id\":\"10f101e0-6ab8-4a83-8ebd-124d648dd282\",\"uri\":"
+                + "\"https://api.notifications.service.gov.uk/services\""
+                + ",\"version\":1},\"uri\":\"https://api.notifications.service.gov.uk\"}\n");
         Notification notification = Notification.builder().build();
 
         when(notificationEmailClient.sendEmail(any(), any(), any(), any())).thenReturn(response);
         when(notificationRepository.save(notification)).thenReturn(notification);
 
-        MvcResult result = mockMvc.perform(post("/notifications/email")
+        mockMvc.perform(post("/notifications/email")
                                                .content(asJsonString(request))
                                                .header("Authorization", "user")
                                                .header("ServiceAuthorization", "Services")
@@ -305,10 +331,10 @@ public class NotificationControllerTest {
     }
 
     @Test
-    public void createLetterNotificationReturnSuccessWhenReasonIsUnableToRefundToCard() throws Exception {
+    void createLetterNotificationReturnSuccessWhenReasonIsUnableToRefundToCard() throws Exception {
 
         mockUserinfoCall(idamUserIDResponseSupplier.get());
-        RefundNotificationLetterRequest request = RefundNotificationLetterRequest.refundNotificationLetterRequestWith()
+        final RefundNotificationLetterRequest request = RefundNotificationLetterRequest.refundNotificationLetterRequestWith()
             .notificationType(NotificationType.LETTER)
             .templateId("test")
             .reference("REF-123")
@@ -345,19 +371,25 @@ public class NotificationControllerTest {
         when(notificationRepository.findByReferenceAndNotificationTypeOrderByDateUpdatedDesc(any(), any())).thenReturn(
             Optional.of(notificationList));
 
-        SendLetterResponse response = new SendLetterResponse("{\"content\":{\"body\":\"Hello Unknown\\r\\n\\r\\nRefund Approved on 2022-01-01\"," +
-                                                                 "\"subject\":\"Refund Notification\"},\"id\":\"0f101e0-6ab8-4a83-8ebd-124d648dd282\"," +
-                                                                 "\"reference\":\"string\",\"scheduled_for\":null,\"template\":{\"id\":" +
-                                                                 "\"0f101e0-6ab8-4a83-8ebd-124d648dd282\",\"uri\":" +
-                                                                 "\"https://api.notifications.service\"," +
-                                                                 "\"version\":1},\"uri\":\"https://api.notifications.service\"}\n");
+        SendLetterResponse response = new SendLetterResponse(
+            "{\"content\":{\"body\":\"Hello Unknown\\r\\n\\r\\nRefund Approved on 2022-01-01\","
+                + "\"subject\":\"Refund Notification\"},\"id\":\"0f101e0-6ab8-4a83-8ebd-124d648dd282\","
+                + "\"reference\":\"string\",\"scheduled_for\":null,\"template\":{\"id\":"
+                + "\"0f101e0-6ab8-4a83-8ebd-124d648dd282\",\"uri\":"
+                + "\"https://api.notifications.service\","
+                + "\"version\":1},\"uri\":\"https://api.notifications.service\"}\n");
         Notification notification = Notification.builder().build();
 
         when(notificationLetterClient.sendLetter(any(), any(), any())).thenReturn(response);
         when(notificationRepository.save(notification)).thenReturn(notification);
-        when(notificationRefundReasonRepository.findByRefundReasonCode(any())).thenReturn(Optional.of(NotificationRefundReasons.notificationRefundReasonWith().refundReasonNotification("There has been an amendment to your claim").build()
+        when(notificationRefundReasonRepository.findByRefundReasonCode(any()))
+            .thenReturn(Optional.of(
+                NotificationRefundReasons
+                    .notificationRefundReasonWith()
+                    .refundReasonNotification("There has been an amendment to your claim")
+                    .build()
         ));
-        MvcResult result = mockMvc.perform(post("/notifications/letter")
+        mockMvc.perform(post("/notifications/letter")
                                                .content(asJsonString(request))
                                                .header("Authorization", "user")
                                                .header("ServiceAuthorization", "Services")
@@ -369,10 +401,10 @@ public class NotificationControllerTest {
     }
 
     @Test
-    public void createLetterNotificationReturn400ErrorWhenReasonIsUnableToRefundToCard() throws Exception {
+    void createLetterNotificationReturn400ErrorWhenReasonIsUnableToRefundToCard() throws Exception {
 
         mockUserinfoCall(idamUserIDResponseSupplier.get());
-        RefundNotificationLetterRequest request = RefundNotificationLetterRequest.refundNotificationLetterRequestWith()
+        final RefundNotificationLetterRequest request = RefundNotificationLetterRequest.refundNotificationLetterRequestWith()
             .notificationType(NotificationType.LETTER)
             .templateId("test")
             .reference("REF-123")
@@ -387,20 +419,22 @@ public class NotificationControllerTest {
                     BigDecimal.valueOf(10)).refundReason("Test").build())
             .serviceName("Probate")
             .build();
-        when(serviceContactRepository.findByServiceName(any())).thenReturn(Optional.of(ServiceContact.serviceContactWith().id(1).serviceName("Probate").serviceMailbox("probate@gov.uk").build()));
+        when(serviceContactRepository.findByServiceName(any()))
+            .thenReturn(Optional.of(ServiceContact.serviceContactWith().id(1).serviceName("Probate").serviceMailbox("probate@gov.uk").build()));
         mockGenerateLetterTemplatePreview();
-        SendLetterResponse response = new SendLetterResponse("{\"content\":{\"body\":\"Hello Unknown\\r\\n\\r\\nRefund Approved on 2022-01-01\"," +
-                                                                 "\"subject\":\"Refund Notification\"},\"id\":\"0f101e0-6ab8-4a83-8ebd-124d648dd282\"," +
-                                                                 "\"reference\":\"string\",\"scheduled_for\":null,\"template\":{\"id\":" +
-                                                                 "\"0f101e0-6ab8-4a83-8ebd-124d648dd282\",\"uri\":" +
-                                                                 "\"https://api.notifications.service\"," +
-                                                                 "\"version\":1},\"uri\":\"https://api.notifications.service\"}\n");
+        SendLetterResponse response = new SendLetterResponse(
+            "{\"content\":{\"body\":\"Hello Unknown\\r\\n\\r\\nRefund Approved on 2022-01-01\","
+                + "\"subject\":\"Refund Notification\"},\"id\":\"0f101e0-6ab8-4a83-8ebd-124d648dd282\","
+                + "\"reference\":\"string\",\"scheduled_for\":null,\"template\":{\"id\":"
+                + "\"0f101e0-6ab8-4a83-8ebd-124d648dd282\",\"uri\":"
+                + "\"https://api.notifications.service\","
+                + "\"version\":1},\"uri\":\"https://api.notifications.service\"}\n");
         Notification notification = Notification.builder().build();
 
         when(notificationLetterClient.sendLetter(any(), any(), any())).thenReturn(response);
         when(notificationRepository.save(notification)).thenReturn(notification);
 
-        MvcResult result = mockMvc.perform(post("/notifications/letter")
+        mockMvc.perform(post("/notifications/letter")
                                                .content(asJsonString(request))
                                                .header("Authorization", "user")
                                                .header("ServiceAuthorization", "Services")
@@ -412,11 +446,11 @@ public class NotificationControllerTest {
     }
 
     @Test
-    public void createEmailNotificationReturn500ThrowsRestrictedApiKeyException() throws Exception {
+    void createEmailNotificationReturn500ThrowsRestrictedApiKeyException() throws Exception {
         mockUserinfoCall(idamUserIDResponseSupplier.get());
-        String errorMessage = "Status code: 400 {\"errors\":[{\"error\":\"BadRequestError\"," +
-            "\"message\":\"Can\\u2019t send to this recipient using a team-only API key\"}],\"status_code\":400}\n";
-        RefundNotificationEmailRequest request = RefundNotificationEmailRequest.refundNotificationEmailRequestWith()
+        String errorMessage = "Status code: 400 {\"errors\":[{\"error\":\"BadRequestError\","
+            + "\"message\":\"Can\\u2019t send to this recipient using a team-only API key\"}],\"status_code\":400}\n";
+        final RefundNotificationEmailRequest request = RefundNotificationEmailRequest.refundNotificationEmailRequestWith()
             .notificationType(NotificationType.EMAIL)
             .templateId("test")
             .reference("REF-123")
@@ -426,7 +460,14 @@ public class NotificationControllerTest {
                     BigDecimal.valueOf(10)).refundReason("test").build())
             .serviceName("Probate")
             .build();
-        when(serviceContactRepository.findByServiceName(any())).thenReturn(Optional.of(ServiceContact.serviceContactWith().id(1).serviceName("Probate").serviceMailbox("probate@gov.uk").build()));
+        when(serviceContactRepository.findByServiceName(any()))
+            .thenReturn(Optional.of(
+                ServiceContact
+                    .serviceContactWith()
+                    .id(1)
+                    .serviceName("Probate")
+                    .serviceMailbox("probate@gov.uk")
+                    .build()));
         mockGenerateEmailTemplatePreview();
 
         Notification notification = Notification.builder().build();
@@ -434,7 +475,12 @@ public class NotificationControllerTest {
 
         when(notificationEmailClient.sendEmail(any(), any(), any(), any())).thenThrow(new NotificationClientException(errorMessage));
         when(notificationRepository.save(notification)).thenReturn(notification);
-        when(notificationRefundReasonRepository.findByRefundReasonCode(any())).thenReturn(Optional.of(NotificationRefundReasons.notificationRefundReasonWith().refundReasonNotification("There has been an amendment to your claim").build()
+        when(notificationRefundReasonRepository.findByRefundReasonCode(any()))
+            .thenReturn(Optional.of(
+                NotificationRefundReasons
+                    .notificationRefundReasonWith()
+                    .refundReasonNotification("There has been an amendment to your claim")
+                    .build()
         ));
         MvcResult result = mockMvc.perform(post("/notifications/email")
                                                .content(asJsonString(request))
@@ -450,11 +496,11 @@ public class NotificationControllerTest {
 
 
     @Test
-    public void createEmailNotificationReturn422ThrowsInvalidTemplateId() throws Exception {
+    void createEmailNotificationReturn422ThrowsInvalidTemplateId() throws Exception {
         mockUserinfoCall(idamUserIDResponseSupplier.get());
-        String errorMessage = "Status code: 400 {\"errors\":[{\"error\":\"BadRequestError\"," +
-            "\"message\":\"template_id is not a valid UUID\"}],\"status_code\":400}\n";
-        RefundNotificationEmailRequest request = RefundNotificationEmailRequest.refundNotificationEmailRequestWith()
+        String errorMessage = "Status code: 400 {\"errors\":[{\"error\":\"BadRequestError\","
+            + "\"message\":\"template_id is not a valid UUID\"}],\"status_code\":400}\n";
+        final RefundNotificationEmailRequest request = RefundNotificationEmailRequest.refundNotificationEmailRequestWith()
             .notificationType(NotificationType.EMAIL)
             .templateId("test")
             .reference("REF-123")
@@ -464,7 +510,9 @@ public class NotificationControllerTest {
                     BigDecimal.valueOf(10)).refundReason("test").build())
             .serviceName("Probate")
             .build();
-        when(serviceContactRepository.findByServiceName(any())).thenReturn(Optional.of(ServiceContact.serviceContactWith().id(1).serviceName("Probate").serviceMailbox("probate@gov.uk").build()));
+        when(serviceContactRepository.findByServiceName(any()))
+            .thenReturn(Optional.of(
+                ServiceContact.serviceContactWith().id(1).serviceName("Probate").serviceMailbox("probate@gov.uk").build()));
         mockGenerateEmailTemplatePreview();
 
         Notification notification = Notification.builder().build();
@@ -472,7 +520,12 @@ public class NotificationControllerTest {
 
         when(notificationEmailClient.sendEmail(any(), any(), any(), any())).thenThrow(new NotificationClientException(errorMessage));
         when(notificationRepository.save(notification)).thenReturn(notification);
-        when(notificationRefundReasonRepository.findByRefundReasonCode(any())).thenReturn(Optional.of(NotificationRefundReasons.notificationRefundReasonWith().refundReasonNotification("There has been an amendment to your claim").build()
+        when(notificationRefundReasonRepository.findByRefundReasonCode(any()))
+            .thenReturn(Optional.of(
+                NotificationRefundReasons
+                    .notificationRefundReasonWith()
+                    .refundReasonNotification("There has been an amendment to your claim")
+                    .build()
         ));
         MvcResult result = mockMvc.perform(post("/notifications/email")
                                                .content(asJsonString(request))
@@ -487,11 +540,11 @@ public class NotificationControllerTest {
     }
 
     @Test
-    public void createEmailNotificationReturn500ThrowsInvalidApiKeyException() throws Exception {
+    void createEmailNotificationReturn500ThrowsInvalidApiKeyException() throws Exception {
         mockUserinfoCall(idamUserIDResponseSupplier.get());
-        String errorMessage = "Status code: 403 {\"errors\":[{\"error\":\"BadRequestError\"," +
-            "\"message\":\"Invalid api key\"}],\"status_code\":400}\n";
-        RefundNotificationEmailRequest request = RefundNotificationEmailRequest.refundNotificationEmailRequestWith()
+        String errorMessage = "Status code: 403 {\"errors\":[{\"error\":\"BadRequestError\","
+            + "\"message\":\"Invalid api key\"}],\"status_code\":400}\n";
+        final RefundNotificationEmailRequest request = RefundNotificationEmailRequest.refundNotificationEmailRequestWith()
             .notificationType(NotificationType.EMAIL)
             .templateId("test")
             .reference("REF-123")
@@ -501,7 +554,8 @@ public class NotificationControllerTest {
                     BigDecimal.valueOf(10)).refundReason("test").build())
             .serviceName("Probate")
             .build();
-        when(serviceContactRepository.findByServiceName(any())).thenReturn(Optional.of(ServiceContact.serviceContactWith().id(1).serviceName("Probate").serviceMailbox("probate@gov.uk").build()));
+        when(serviceContactRepository.findByServiceName(any()))
+            .thenReturn(Optional.of(ServiceContact.serviceContactWith().id(1).serviceName("Probate").serviceMailbox("probate@gov.uk").build()));
         mockGenerateEmailTemplatePreview();
 
         Notification notification = Notification.builder().build();
@@ -509,7 +563,12 @@ public class NotificationControllerTest {
 
         when(notificationEmailClient.sendEmail(any(), any(), any(), any())).thenThrow(new NotificationClientException(errorMessage));
         when(notificationRepository.save(notification)).thenReturn(notification);
-        when(notificationRefundReasonRepository.findByRefundReasonCode(any())).thenReturn(Optional.of(NotificationRefundReasons.notificationRefundReasonWith().refundReasonNotification("There has been an amendment to your claim").build()
+        when(notificationRefundReasonRepository.findByRefundReasonCode(any()))
+            .thenReturn(Optional.of(
+                NotificationRefundReasons
+                    .notificationRefundReasonWith()
+                    .refundReasonNotification("There has been an amendment to your claim")
+                    .build()
         ));
         MvcResult result = mockMvc.perform(post("/notifications/email")
                                                .content(asJsonString(request))
@@ -524,11 +583,11 @@ public class NotificationControllerTest {
     }
 
     @Test
-    public void createEmailNotificationReturn500ThrowsExceededRequestLimitException() throws Exception {
+    void createEmailNotificationReturn500ThrowsExceededRequestLimitException() throws Exception {
         mockUserinfoCall(idamUserIDResponseSupplier.get());
-        String errorMessage = "Status code: 429 {\"errors\":[{\"error\":\"BadRequestError\"," +
-            "\"message\":\"Invalid api key\"}],\"status_code\":400}\n";
-        RefundNotificationEmailRequest request = RefundNotificationEmailRequest.refundNotificationEmailRequestWith()
+        String errorMessage = "Status code: 429 {\"errors\":[{\"error\":\"BadRequestError\","
+            + "\"message\":\"Invalid api key\"}],\"status_code\":400}\n";
+        final RefundNotificationEmailRequest request = RefundNotificationEmailRequest.refundNotificationEmailRequestWith()
             .notificationType(NotificationType.EMAIL)
             .templateId("test")
             .reference("REF-123")
@@ -538,7 +597,8 @@ public class NotificationControllerTest {
                     BigDecimal.valueOf(10)).refundReason("test").build())
             .serviceName("Probate")
             .build();
-        when(serviceContactRepository.findByServiceName(any())).thenReturn(Optional.of(ServiceContact.serviceContactWith().id(1).serviceName("Probate").serviceMailbox("probate@gov.uk").build()));
+        when(serviceContactRepository.findByServiceName(any()))
+            .thenReturn(Optional.of(ServiceContact.serviceContactWith().id(1).serviceName("Probate").serviceMailbox("probate@gov.uk").build()));
         mockGenerateEmailTemplatePreview();
 
         Notification notification = Notification.builder().build();
@@ -546,7 +606,12 @@ public class NotificationControllerTest {
 
         when(notificationEmailClient.sendEmail(any(), any(), any(), any())).thenThrow(new NotificationClientException(errorMessage));
         when(notificationRepository.save(notification)).thenReturn(notification);
-        when(notificationRefundReasonRepository.findByRefundReasonCode(any())).thenReturn(Optional.of(NotificationRefundReasons.notificationRefundReasonWith().refundReasonNotification("There has been an amendment to your claim").build()
+        when(notificationRefundReasonRepository.findByRefundReasonCode(any()))
+            .thenReturn(Optional.of(
+                NotificationRefundReasons
+                    .notificationRefundReasonWith()
+                    .refundReasonNotification("There has been an amendment to your claim")
+                    .build()
         ));
         MvcResult result = mockMvc.perform(post("/notifications/email")
                                                .content(asJsonString(request))
@@ -561,11 +626,11 @@ public class NotificationControllerTest {
     }
 
     @Test
-    public void createEmailNotificationReturn503ThrowsGovNotifyConnectionException() throws Exception {
+    void createEmailNotificationReturn503ThrowsGovNotifyConnectionException() throws Exception {
         mockUserinfoCall(idamUserIDResponseSupplier.get());
-        String errorMessage = "Status code: 500 {\"errors\":[{\"error\":\"BadRequestError\"," +
-            "\"message\":\"Invalid api key\"}],\"status_code\":400}\n";
-        RefundNotificationEmailRequest request = RefundNotificationEmailRequest.refundNotificationEmailRequestWith()
+        String errorMessage = "Status code: 500 {\"errors\":[{\"error\":\"BadRequestError\","
+            + "\"message\":\"Invalid api key\"}],\"status_code\":400}\n";
+        final RefundNotificationEmailRequest request = RefundNotificationEmailRequest.refundNotificationEmailRequestWith()
             .notificationType(NotificationType.EMAIL)
             .templateId("test")
             .reference("REF-123")
@@ -575,14 +640,20 @@ public class NotificationControllerTest {
                     BigDecimal.valueOf(10)).refundReason("test").build())
             .serviceName("Probate")
             .build();
-        when(serviceContactRepository.findByServiceName(any())).thenReturn(Optional.of(ServiceContact.serviceContactWith().id(1).serviceName("Probate").serviceMailbox("probate@gov.uk").build()));
+        when(serviceContactRepository.findByServiceName(any()))
+            .thenReturn(Optional.of(ServiceContact.serviceContactWith().id(1).serviceName("Probate").serviceMailbox("probate@gov.uk").build()));
 
         mockGenerateEmailTemplatePreview();
         Notification notification = Notification.builder().build();
 
         when(notificationEmailClient.sendEmail(any(), any(), any(), any())).thenThrow(new NotificationClientException(errorMessage));
         when(notificationRepository.save(notification)).thenReturn(notification);
-        when(notificationRefundReasonRepository.findByRefundReasonCode(any())).thenReturn(Optional.of(NotificationRefundReasons.notificationRefundReasonWith().refundReasonNotification("There has been an amendment to your claim").build()
+        when(notificationRefundReasonRepository.findByRefundReasonCode(any()))
+            .thenReturn(Optional.of(
+                NotificationRefundReasons
+                    .notificationRefundReasonWith()
+                    .refundReasonNotification("There has been an amendment to your claim")
+                    .build()
         ));
         MvcResult result = mockMvc.perform(post("/notifications/email")
                                                .content(asJsonString(request))
@@ -597,11 +668,11 @@ public class NotificationControllerTest {
     }
 
     @Test
-    public void createEmailNotificationReturn500ThrowsGovNotifyUnmappedException() throws Exception {
+    void createEmailNotificationReturn500ThrowsGovNotifyUnmappedException() throws Exception {
         mockUserinfoCall(idamUserIDResponseSupplier.get());
-        String errorMessage = "Status code: 503 {\"errors\":[{\"error\":\"BadRequestError\"," +
-            "\"message\":\"Invalid api key\"}],\"status_code\":400}\n";
-        RefundNotificationEmailRequest request = RefundNotificationEmailRequest.refundNotificationEmailRequestWith()
+        String errorMessage = "Status code: 503 {\"errors\":[{\"error\":\"BadRequestError\","
+            + "\"message\":\"Invalid api key\"}],\"status_code\":400}\n";
+        final RefundNotificationEmailRequest request = RefundNotificationEmailRequest.refundNotificationEmailRequestWith()
             .notificationType(NotificationType.EMAIL)
             .templateId("test")
             .reference("REF-123")
@@ -611,7 +682,8 @@ public class NotificationControllerTest {
                     BigDecimal.valueOf(10)).refundReason("test").build())
             .serviceName("Probate")
             .build();
-        when(serviceContactRepository.findByServiceName(any())).thenReturn(Optional.of(ServiceContact.serviceContactWith().id(1).serviceName("Probate").serviceMailbox("probate@gov.uk").build()));
+        when(serviceContactRepository.findByServiceName(any()))
+            .thenReturn(Optional.of(ServiceContact.serviceContactWith().id(1).serviceName("Probate").serviceMailbox("probate@gov.uk").build()));
 
         mockGenerateEmailTemplatePreview();
 
@@ -620,7 +692,12 @@ public class NotificationControllerTest {
 
         when(notificationEmailClient.sendEmail(any(), any(), any(), any())).thenThrow(new NotificationClientException(errorMessage));
         when(notificationRepository.save(notification)).thenReturn(notification);
-        when(notificationRefundReasonRepository.findByRefundReasonCode(any())).thenReturn(Optional.of(NotificationRefundReasons.notificationRefundReasonWith().refundReasonNotification("There has been an amendment to your claim").build()
+        when(notificationRefundReasonRepository.findByRefundReasonCode(any()))
+            .thenReturn(Optional.of(
+                NotificationRefundReasons
+                    .notificationRefundReasonWith()
+                    .refundReasonNotification("There has been an amendment to your claim")
+                    .build()
         ));
         MvcResult result = mockMvc.perform(post("/notifications/email")
                                                .content(asJsonString(request))
@@ -636,9 +713,9 @@ public class NotificationControllerTest {
 
 
     @Test
-    public void createLetterNotificationReturnSuccess() throws Exception {
+    void createLetterNotificationReturnSuccess() throws Exception {
         mockUserinfoCall(idamUserIDResponseSupplier.get());
-        RefundNotificationLetterRequest request = RefundNotificationLetterRequest.refundNotificationLetterRequestWith()
+        final RefundNotificationLetterRequest request = RefundNotificationLetterRequest.refundNotificationLetterRequestWith()
             .notificationType(NotificationType.EMAIL)
             .templateId("test")
             .reference("REF-123")
@@ -658,19 +735,25 @@ public class NotificationControllerTest {
 
         mockGenerateLetterTemplatePreview();
 
-        SendLetterResponse response = new SendLetterResponse("{\"content\":{\"body\":\"Hello Unknown\\r\\n\\r\\nRefund Approved on 2022-01-01\"," +
-                                                                 "\"subject\":\"Refund Notification\"},\"id\":\"0f101e0-6ab8-4a83-8ebd-124d648dd282\"," +
-                                                                 "\"reference\":\"string\",\"scheduled_for\":null,\"template\":{\"id\":" +
-                                                                 "\"0f101e0-6ab8-4a83-8ebd-124d648dd282\",\"uri\":" +
-                                                                 "\"https://api.notifications.service\"," +
-                                                                 "\"version\":1},\"uri\":\"https://api.notifications.service\"}\n");
+        SendLetterResponse response = new SendLetterResponse(
+            "{\"content\":{\"body\":\"Hello Unknown\\r\\n\\r\\nRefund Approved on 2022-01-01\","
+                + "\"subject\":\"Refund Notification\"},\"id\":\"0f101e0-6ab8-4a83-8ebd-124d648dd282\","
+                + "\"reference\":\"string\",\"scheduled_for\":null,\"template\":{\"id\":"
+                + "\"0f101e0-6ab8-4a83-8ebd-124d648dd282\",\"uri\":"
+                + "\"https://api.notifications.service\","
+                + "\"version\":1},\"uri\":\"https://api.notifications.service\"}\n");
         Notification notification = Notification.builder().build();
-        when(notificationRefundReasonRepository.findByRefundReasonCode(any())).thenReturn(Optional.of(NotificationRefundReasons.notificationRefundReasonWith().refundReasonNotification("There has been an amendment to your claim").build()
+        when(notificationRefundReasonRepository.findByRefundReasonCode(any()))
+            .thenReturn(Optional.of(
+                NotificationRefundReasons
+                    .notificationRefundReasonWith()
+                    .refundReasonNotification("There has been an amendment to your claim")
+                    .build()
         ));
         when(notificationLetterClient.sendLetter(any(), any(), any())).thenReturn(response);
         when(notificationRepository.save(notification)).thenReturn(notification);
 
-        MvcResult result = mockMvc.perform(post("/notifications/letter")
+        mockMvc.perform(post("/notifications/letter")
                                                .content(asJsonString(request))
                                                .header("Authorization", "user")
                                                .header("ServiceAuthorization", "Services")
@@ -681,12 +764,12 @@ public class NotificationControllerTest {
     }
 
     @Test
-    public void createLetterNotificationReturn422ThrowInvalidAddresssException() throws Exception {
+    void createLetterNotificationReturn422ThrowInvalidAddresssException() throws Exception {
         mockUserinfoCall(idamUserIDResponseSupplier.get());
-        String errorMessage = "Status code: 400 {\"errors\":[{\"error\":\"BadRequestError\"," +
-            "\"message\":\"Must be a real UK postcode\"}],\"status_code\":400}\n";
+        String errorMessage = "Status code: 400 {\"errors\":[{\"error\":\"BadRequestError\","
+            + "\"message\":\"Must be a real UK postcode\"}],\"status_code\":400}\n";
 
-        RefundNotificationLetterRequest request = RefundNotificationLetterRequest.refundNotificationLetterRequestWith()
+        final RefundNotificationLetterRequest request = RefundNotificationLetterRequest.refundNotificationLetterRequestWith()
             .notificationType(NotificationType.EMAIL)
             .templateId("test")
             .reference("REF-123")
@@ -708,7 +791,12 @@ public class NotificationControllerTest {
 
         when(notificationLetterClient.sendLetter(any(), any(), any())).thenThrow(new NotificationClientException(errorMessage));
         when(notificationRepository.save(notification)).thenReturn(notification);
-        when(notificationRefundReasonRepository.findByRefundReasonCode(any())).thenReturn(Optional.of(NotificationRefundReasons.notificationRefundReasonWith().refundReasonNotification("There has been an amendment to your claim").build()
+        when(notificationRefundReasonRepository.findByRefundReasonCode(any()))
+            .thenReturn(Optional.of(
+                NotificationRefundReasons
+                    .notificationRefundReasonWith()
+                    .refundReasonNotification("There has been an amendment to your claim")
+                    .build()
         ));
         MvcResult result = mockMvc.perform(post("/notifications/letter")
                                                .content(asJsonString(request))
@@ -724,12 +812,12 @@ public class NotificationControllerTest {
     }
 
     @Test
-    public void createLetterNotificationReturn422ThrowInvalidAddressException2() throws Exception {
+    void createLetterNotificationReturn422ThrowInvalidAddressException2() throws Exception {
         mockUserinfoCall(idamUserIDResponseSupplier.get());
-        String errorMessage = "Status code: 400 {\"errors\":[{\"error\":\"BadRequestError\"," +
-            "\"message\":\"Last line of address must be a real UK postcode or another country\"}],\"status_code\":400}\n";
+        final String errorMessage = "Status code: 400 {\"errors\":[{\"error\":\"BadRequestError\","
+            + "\"message\":\"Last line of address must be a real UK postcode or another country\"}],\"status_code\":400}\n";
 
-        RefundNotificationLetterRequest request = RefundNotificationLetterRequest.refundNotificationLetterRequestWith()
+        final RefundNotificationLetterRequest request = RefundNotificationLetterRequest.refundNotificationLetterRequestWith()
             .notificationType(NotificationType.EMAIL)
             .templateId("test")
             .reference("REF-123")
@@ -749,7 +837,12 @@ public class NotificationControllerTest {
             .thenReturn(Optional.of(buildServiceContactForAddress()));
         mockGenerateLetterTemplatePreview();
         Notification notification = Notification.builder().build();
-        when(notificationRefundReasonRepository.findByRefundReasonCode(any())).thenReturn(Optional.of(NotificationRefundReasons.notificationRefundReasonWith().refundReasonNotification("There has been an amendment to your claim").build()
+        when(notificationRefundReasonRepository.findByRefundReasonCode(any()))
+            .thenReturn(Optional.of(
+                NotificationRefundReasons
+                    .notificationRefundReasonWith()
+                    .refundReasonNotification("There has been an amendment to your claim")
+                    .build()
         ));
         when(notificationLetterClient.sendLetter(any(), any(), any())).thenThrow(new NotificationClientException(errorMessage));
         when(notificationRepository.save(notification)).thenReturn(notification);
@@ -768,12 +861,12 @@ public class NotificationControllerTest {
     }
 
     @Test
-    public void createLetterNotificationReturn422ThrowInvalidTemplateID() throws Exception {
+    void createLetterNotificationReturn422ThrowInvalidTemplateID() throws Exception {
         mockUserinfoCall(idamUserIDResponseSupplier.get());
-        String errorMessage = "Status code: 400 {\"errors\":[{\"error\":\"BadRequestError\"," +
-            "\"message\":\"template_id is not a valid UUID\"}],\"status_code\":400}\n";
+        final String errorMessage = "Status code: 400 {\"errors\":[{\"error\":\"BadRequestError\","
+            + "\"message\":\"template_id is not a valid UUID\"}],\"status_code\":400}\n";
 
-        RefundNotificationLetterRequest request = RefundNotificationLetterRequest.refundNotificationLetterRequestWith()
+        final RefundNotificationLetterRequest request = RefundNotificationLetterRequest.refundNotificationLetterRequestWith()
             .notificationType(NotificationType.EMAIL)
             .templateId("test")
             .reference("REF-123")
@@ -793,7 +886,12 @@ public class NotificationControllerTest {
         mockGenerateLetterTemplatePreview();
 
         Notification notification = Notification.builder().build();
-        when(notificationRefundReasonRepository.findByRefundReasonCode(any())).thenReturn(Optional.of(NotificationRefundReasons.notificationRefundReasonWith().refundReasonNotification("There has been an amendment to your claim").build()
+        when(notificationRefundReasonRepository.findByRefundReasonCode(any()))
+            .thenReturn(Optional.of(
+                NotificationRefundReasons
+                    .notificationRefundReasonWith()
+                    .refundReasonNotification("There has been an amendment to your claim")
+                    .build()
         ));
         when(notificationLetterClient.sendLetter(any(), any(), any())).thenThrow(new NotificationClientException(errorMessage));
         when(notificationRepository.save(notification)).thenReturn(notification);
@@ -811,12 +909,12 @@ public class NotificationControllerTest {
     }
 
     @Test
-    public void createLetterNotificationReturn422ThrowRestrictedApiKeyException() throws Exception {
+    void createLetterNotificationReturn422ThrowRestrictedApiKeyException() throws Exception {
         mockUserinfoCall(idamUserIDResponseSupplier.get());
-        String errorMessage = "Status code: 400 {\"errors\":[{\"error\":\"BadRequestError\"," +
-            "\"message\":\"something else\"}],\"status_code\":400}\n";
+        String errorMessage = "Status code: 400 {\"errors\":[{\"error\":\"BadRequestError\","
+            + "\"message\":\"something else\"}],\"status_code\":400}\n";
 
-        RefundNotificationLetterRequest request = RefundNotificationLetterRequest.refundNotificationLetterRequestWith()
+        final RefundNotificationLetterRequest request = RefundNotificationLetterRequest.refundNotificationLetterRequestWith()
             .notificationType(NotificationType.EMAIL)
             .templateId("test")
             .reference("REF-123")
@@ -838,7 +936,12 @@ public class NotificationControllerTest {
 
         when(notificationLetterClient.sendLetter(any(), any(), any())).thenThrow(new NotificationClientException(errorMessage));
         when(notificationRepository.save(notification)).thenReturn(notification);
-        when(notificationRefundReasonRepository.findByRefundReasonCode(any())).thenReturn(Optional.of(NotificationRefundReasons.notificationRefundReasonWith().refundReasonNotification("There has been an amendment to your claim").build()
+        when(notificationRefundReasonRepository.findByRefundReasonCode(any()))
+            .thenReturn(Optional.of(
+                NotificationRefundReasons
+                    .notificationRefundReasonWith()
+                    .refundReasonNotification("There has been an amendment to your claim")
+                    .build()
         ));
         MvcResult result = mockMvc.perform(post("/notifications/letter")
                                                .content(asJsonString(request))
@@ -855,12 +958,12 @@ public class NotificationControllerTest {
 
 
     @Test
-    public void createLetterNotificationReturn500ThrowRestrictedApiKeyException() throws Exception {
+    void createLetterNotificationReturn500ThrowRestrictedApiKeyException() throws Exception {
         mockUserinfoCall(idamUserIDResponseSupplier.get());
-        String errorMessage = "Status code: 403 {\"errors\":[{\"error\":\"BadRequestError\"," +
-            "\"message\":\"Incorrect api key\"}],\"status_code\":400}\n";
+        String errorMessage = "Status code: 403 {\"errors\":[{\"error\":\"BadRequestError\","
+            + "\"message\":\"Incorrect api key\"}],\"status_code\":400}\n";
 
-        RefundNotificationLetterRequest request = RefundNotificationLetterRequest.refundNotificationLetterRequestWith()
+        final RefundNotificationLetterRequest request = RefundNotificationLetterRequest.refundNotificationLetterRequestWith()
             .notificationType(NotificationType.EMAIL)
             .templateId("test")
             .reference("REF-123")
@@ -883,7 +986,12 @@ public class NotificationControllerTest {
 
         when(notificationLetterClient.sendLetter(any(), any(), any())).thenThrow(new NotificationClientException(errorMessage));
         when(notificationRepository.save(notification)).thenReturn(notification);
-        when(notificationRefundReasonRepository.findByRefundReasonCode(any())).thenReturn(Optional.of(NotificationRefundReasons.notificationRefundReasonWith().refundReasonNotification("There has been an amendment to your claim").build()
+        when(notificationRefundReasonRepository.findByRefundReasonCode(any()))
+            .thenReturn(Optional.of(
+                NotificationRefundReasons
+                    .notificationRefundReasonWith()
+                    .refundReasonNotification("There has been an amendment to your claim")
+                    .build()
         ));
         MvcResult result = mockMvc.perform(post("/notifications/letter")
                                                .content(asJsonString(request))
@@ -899,12 +1007,12 @@ public class NotificationControllerTest {
     }
 
     @Test
-    public void createLetterNotificationReturn500ThrowExceededRequestLimitException() throws Exception {
+    void createLetterNotificationReturn500ThrowExceededRequestLimitException() throws Exception {
         mockUserinfoCall(idamUserIDResponseSupplier.get());
-        String errorMessage = "Status code: 429 {\"errors\":[{\"error\":\"BadRequestError\"," +
-            "\"message\":\"Incorrect api key\"}],\"status_code\":400}\n";
+        String errorMessage = "Status code: 429 {\"errors\":[{\"error\":\"BadRequestError\","
+            + "\"message\":\"Incorrect api key\"}],\"status_code\":400}\n";
 
-        RefundNotificationLetterRequest request = RefundNotificationLetterRequest.refundNotificationLetterRequestWith()
+        final RefundNotificationLetterRequest request = RefundNotificationLetterRequest.refundNotificationLetterRequestWith()
             .notificationType(NotificationType.EMAIL)
             .templateId("test")
             .reference("REF-123")
@@ -928,7 +1036,12 @@ public class NotificationControllerTest {
 
         when(notificationLetterClient.sendLetter(any(), any(), any())).thenThrow(new NotificationClientException(errorMessage));
         when(notificationRepository.save(notification)).thenReturn(notification);
-        when(notificationRefundReasonRepository.findByRefundReasonCode(any())).thenReturn(Optional.of(NotificationRefundReasons.notificationRefundReasonWith().refundReasonNotification("There has been an amendment to your claim").build()
+        when(notificationRefundReasonRepository.findByRefundReasonCode(any()))
+            .thenReturn(Optional.of(
+                NotificationRefundReasons
+                    .notificationRefundReasonWith()
+                    .refundReasonNotification("There has been an amendment to your claim")
+                    .build()
         ));
         MvcResult result = mockMvc.perform(post("/notifications/letter")
                                                .content(asJsonString(request))
@@ -943,12 +1056,12 @@ public class NotificationControllerTest {
     }
 
     @Test
-    public void createLetterNotificationReturn503ThrowGovNotifyConnectionException() throws Exception {
+    void createLetterNotificationReturn503ThrowGovNotifyConnectionException() throws Exception {
         mockUserinfoCall(idamUserIDResponseSupplier.get());
-        String errorMessage = "Status code: 500 {\"errors\":[{\"error\":\"BadRequestError\"," +
-            "\"message\":\"Incorrect api key\"}],\"status_code\":400}\n";
+        String errorMessage = "Status code: 500 {\"errors\":[{\"error\":\"BadRequestError\","
+            + "\"message\":\"Incorrect api key\"}],\"status_code\":400}\n";
 
-        RefundNotificationLetterRequest request = RefundNotificationLetterRequest.refundNotificationLetterRequestWith()
+        final RefundNotificationLetterRequest request = RefundNotificationLetterRequest.refundNotificationLetterRequestWith()
             .notificationType(NotificationType.EMAIL)
             .templateId("test")
             .reference("REF-123")
@@ -972,7 +1085,12 @@ public class NotificationControllerTest {
 
         when(notificationLetterClient.sendLetter(any(), any(), any())).thenThrow(new NotificationClientException(errorMessage));
         when(notificationRepository.save(notification)).thenReturn(notification);
-        when(notificationRefundReasonRepository.findByRefundReasonCode(any())).thenReturn(Optional.of(NotificationRefundReasons.notificationRefundReasonWith().refundReasonNotification("There has been an amendment to your claim").build()
+        when(notificationRefundReasonRepository.findByRefundReasonCode(any()))
+            .thenReturn(Optional.of(
+                NotificationRefundReasons
+                    .notificationRefundReasonWith()
+                    .refundReasonNotification("There has been an amendment to your claim")
+                    .build()
         ));
         MvcResult result = mockMvc.perform(post("/notifications/letter")
                                                .content(asJsonString(request))
@@ -987,12 +1105,12 @@ public class NotificationControllerTest {
     }
 
     @Test
-    public void createLetterNotificationReturn500ThrowGovNotifyUnmappedException() throws Exception {
+    void createLetterNotificationReturn500ThrowGovNotifyUnmappedException() throws Exception {
         mockUserinfoCall(idamUserIDResponseSupplier.get());
-        String errorMessage = "Status code: 503 {\"errors\":[{\"error\":\"BadRequestError\"," +
-            "\"message\":\"Incorrect api key\"}],\"status_code\":400}\n";
+        String errorMessage = "Status code: 503 {\"errors\":[{\"error\":\"BadRequestError\","
+            + "\"message\":\"Incorrect api key\"}],\"status_code\":400}\n";
 
-        RefundNotificationLetterRequest request = RefundNotificationLetterRequest.refundNotificationLetterRequestWith()
+        final RefundNotificationLetterRequest request = RefundNotificationLetterRequest.refundNotificationLetterRequestWith()
             .notificationType(NotificationType.EMAIL)
             .templateId("test")
             .reference("REF-123")
@@ -1016,7 +1134,12 @@ public class NotificationControllerTest {
 
         when(notificationLetterClient.sendLetter(any(), any(), any())).thenThrow(new NotificationClientException(errorMessage));
         when(notificationRepository.save(notification)).thenReturn(notification);
-        when(notificationRefundReasonRepository.findByRefundReasonCode(any())).thenReturn(Optional.of(NotificationRefundReasons.notificationRefundReasonWith().refundReasonNotification("There has been an amendment to your claim").build()
+        when(notificationRefundReasonRepository.findByRefundReasonCode(any()))
+            .thenReturn(Optional.of(
+                NotificationRefundReasons
+                    .notificationRefundReasonWith()
+                    .refundReasonNotification("There has been an amendment to your claim")
+                    .build()
         ));
         MvcResult result = mockMvc.perform(post("/notifications/letter")
                                                .content(asJsonString(request))
@@ -1036,9 +1159,8 @@ public class NotificationControllerTest {
 
         //mock userinfo call
         mockUserinfoCall(idamUserIDResponseSupplier.get());
-        when(notificationRepository.findByReferenceOrderByDateUpdatedDesc(any()
-        ))
-            .thenReturn(Optional.ofNullable(List.of(
+        when(notificationRepository.findByReferenceOrderByDateUpdatedDesc(any()))
+            .thenReturn(Optional.of(List.of(
                 NotificationServiceImplTest.letterNotificationListSupplierBasedOnRefundRef.get())));
 
         MvcResult mvcResult = mockMvc.perform(get("/notifications/RF-123")
@@ -1060,7 +1182,7 @@ public class NotificationControllerTest {
         mockUserinfoCall(idamUserIDResponseSupplier.get());
         when(notificationRepository.findByReferenceOrderByDateUpdatedDesc(any()
         ))
-            .thenReturn(Optional.ofNullable(List.of(
+            .thenReturn(Optional.of(List.of(
                 NotificationServiceImplTest.emailNotificationListSupplierBasedOnRefundRef.get())));
 
         MvcResult mvcResult = mockMvc.perform(get("/notifications/RF-124")
@@ -1072,7 +1194,7 @@ public class NotificationControllerTest {
         NotificationResponseDto notificationResponseDto = mapper.readValue(
             mvcResult.getResponse().getContentAsString(), NotificationResponseDto.class
         );
-        Assertions.assertEquals("EMAIL",notificationResponseDto.getNotifications().get(0).getNotificationType());
+        Assertions.assertEquals("EMAIL", notificationResponseDto.getNotifications().get(0).getNotificationType());
     }
 
     @Test
@@ -1080,10 +1202,8 @@ public class NotificationControllerTest {
 
         //mock userinfo call
         mockUserinfoCall(idamUserIDResponseSupplier.get());
-        Optional<List<Notification>> notificationList=Optional.empty();
-        when(notificationRepository.findByReferenceOrderByDateUpdatedDesc(any()
-        ))
-            .thenReturn(notificationList);
+        Optional<List<Notification>> notificationList = Optional.empty();
+        when(notificationRepository.findByReferenceOrderByDateUpdatedDesc(any())).thenReturn(notificationList);
 
         MvcResult mvcResult = mockMvc.perform(get("/notifications/RF-124")
                                                   .header("Authorization", "user")
@@ -1095,7 +1215,7 @@ public class NotificationControllerTest {
     }
 
     @Test
-    public void returnEmailTemplatePreviewForRefundWhenContacted() throws Exception {
+    void returnEmailTemplatePreviewForRefundWhenContacted() throws Exception {
         mockUserinfoCall(idamUserIDResponseSupplier.get());
         DocPreviewRequest request = DocPreviewRequest.docPreviewRequestWith()
             .notificationType(NotificationType.EMAIL)
@@ -1107,18 +1227,25 @@ public class NotificationControllerTest {
             .paymentChannel("bulk scan")
             .paymentMethod("cash")
             .build();
-        when(serviceContactRepository.findByServiceName(any())).thenReturn(Optional.of(ServiceContact.serviceContactWith().id(1).serviceName("Probate").serviceMailbox("probate@gov.uk").build()));
+        when(serviceContactRepository.findByServiceName(any()))
+            .thenReturn(Optional.of(ServiceContact.serviceContactWith().id(1).serviceName("Probate").serviceMailbox("probate@gov.uk").build()));
 
-        TemplatePreview response = new TemplatePreview("{                                                             "+
-                                                           "\"id\": \"1133960c-4ffa-42db-806c-451a68c56e09\","+
-                                                           "\"type\": \"email\","+
-                                                           "\"version\": 11,"+
-                                                           "\"body\": \"Dear Sir/Madam\","+
-                                                           "\"subject\": \"HMCTS refund request approved\","+
-                                                           "\"html\": \"Dear Sir/Madam\","+
-                                                           "}");
+        TemplatePreview response = new TemplatePreview(
+            "{                                                             "
+                + "\"id\": \"1133960c-4ffa-42db-806c-451a68c56e09\","
+                + "\"type\": \"email\","
+                + "\"version\": 11,"
+                + "\"body\": \"Dear Sir/Madam\","
+                + "\"subject\": \"HMCTS refund request approved\","
+                + "\"html\": \"Dear Sir/Madam\","
+                + "}");
         when(notificationEmailClient.generateTemplatePreview(any(), anyMap())).thenReturn(response);
-        when(notificationRefundReasonRepository.findByRefundReasonCode(any())).thenReturn(Optional.of(NotificationRefundReasons.notificationRefundReasonWith().refundReasonNotification("There has been an amendment to your claim").build()
+        when(notificationRefundReasonRepository.findByRefundReasonCode(any()))
+            .thenReturn(Optional.of(
+                NotificationRefundReasons
+                    .notificationRefundReasonWith()
+                    .refundReasonNotification("There has been an amendment to your claim")
+                    .build()
         ));
         MvcResult result = mockMvc.perform(post("/notifications/doc-preview")
                                                .content(asJsonString(request))
@@ -1137,7 +1264,7 @@ public class NotificationControllerTest {
     }
 
     @Test
-    public void returnEmailTemplatePreviewForSendRefund() throws Exception {
+    void returnEmailTemplatePreviewForSendRefund() throws Exception {
         mockUserinfoCall(idamUserIDResponseSupplier.get());
         DocPreviewRequest request = DocPreviewRequest.docPreviewRequestWith()
             .notificationType(NotificationType.EMAIL)
@@ -1149,17 +1276,24 @@ public class NotificationControllerTest {
             .paymentChannel("telephony")
             .paymentMethod("card")
             .build();
-        when(serviceContactRepository.findByServiceName(any())).thenReturn(Optional.of(ServiceContact.serviceContactWith().id(1).serviceName("Probate").serviceMailbox("probate@gov.uk").build()));
-        when(notificationRefundReasonRepository.findByRefundReasonCode(any())).thenReturn(Optional.of(NotificationRefundReasons.notificationRefundReasonWith().refundReasonNotification("There has been an amendment to your claim").build()
+        when(serviceContactRepository.findByServiceName(any()))
+            .thenReturn(Optional.of(ServiceContact.serviceContactWith().id(1).serviceName("Probate").serviceMailbox("probate@gov.uk").build()));
+        when(notificationRefundReasonRepository.findByRefundReasonCode(any()))
+            .thenReturn(Optional.of(
+                NotificationRefundReasons
+                    .notificationRefundReasonWith()
+                    .refundReasonNotification("There has been an amendment to your claim")
+                    .build()
         ));
-        TemplatePreview response = new TemplatePreview("{                                                             "+
-                                                           "\"id\": \"1222960c-4ffa-42db-806c-451a68c56e09\","+
-                                                           "\"type\": \"email\","+
-                                                           "\"version\": 11,"+
-                                                           "\"body\": \"Dear Sir/Madam\","+
-                                                           "\"subject\": \"HMCTS refund request approved\","+
-                                                           "\"html\": \"Dear Sir/Madam\","+
-                                                           "}");
+        TemplatePreview response = new TemplatePreview(
+            "{                                                             "
+                + "\"id\": \"1222960c-4ffa-42db-806c-451a68c56e09\","
+                + "\"type\": \"email\","
+                + "\"version\": 11,"
+                + "\"body\": \"Dear Sir/Madam\","
+                + "\"subject\": \"HMCTS refund request approved\","
+                + "\"html\": \"Dear Sir/Madam\","
+                + "}");
         when(notificationEmailClient.generateTemplatePreview(any(), anyMap())).thenReturn(response);
 
         MvcResult result = mockMvc.perform(post("/notifications/doc-preview")
@@ -1179,7 +1313,7 @@ public class NotificationControllerTest {
     }
 
     @Test
-    public void returnLetterTemplatePreviewForRefundWhenContacted() throws Exception {
+    void returnLetterTemplatePreviewForRefundWhenContacted() throws Exception {
         mockUserinfoCall(idamUserIDResponseSupplier.get());
         DocPreviewRequest request = DocPreviewRequest.docPreviewRequestWith()
             .notificationType(NotificationType.LETTER)
@@ -1194,16 +1328,22 @@ public class NotificationControllerTest {
             .build();
         when(serviceContactRepository.findByServiceName(any())).thenReturn(Optional.of(buildServiceContactForAddress()));
 
-        when(notificationRefundReasonRepository.findByRefundReasonCode(any())).thenReturn(Optional.of(NotificationRefundReasons.notificationRefundReasonWith().refundReasonNotification("There has been an amendment to your claim").build()
+        when(notificationRefundReasonRepository.findByRefundReasonCode(any()))
+            .thenReturn(Optional.of(
+                NotificationRefundReasons
+                    .notificationRefundReasonWith()
+                    .refundReasonNotification("There has been an amendment to your claim")
+                    .build()
         ));
-        TemplatePreview response = new TemplatePreview("{                                                             "+
-                                                           "\"id\": \"2222960c-4ffa-42db-806c-451a68c56e09\","+
-                                                           "\"type\": \"letter\","+
-                                                           "\"version\": 11,"+
-                                                           "\"body\": \"Dear Sir/Madam\","+
-                                                           "\"subject\": \"HMCTS refund request approved\","+
-                                                           "\"html\": \"Dear Sir/Madam\","+
-                                                           "}");
+        TemplatePreview response = new TemplatePreview(
+            "{                                                             "
+                + "\"id\": \"2222960c-4ffa-42db-806c-451a68c56e09\","
+                + "\"type\": \"letter\","
+                + "\"version\": 11,"
+                + "\"body\": \"Dear Sir/Madam\","
+                + "\"subject\": \"HMCTS refund request approved\","
+                + "\"html\": \"Dear Sir/Madam\","
+                + "}");
         when(notificationLetterClient.generateTemplatePreview(any(), anyMap())).thenReturn(response);
 
         MvcResult result = mockMvc.perform(post("/notifications/doc-preview")
@@ -1223,7 +1363,7 @@ public class NotificationControllerTest {
     }
 
     @Test
-    public void returnLetterTemplatePreviewForSendRefund() throws Exception {
+    void returnLetterTemplatePreviewForSendRefund() throws Exception {
         mockUserinfoCall(idamUserIDResponseSupplier.get());
         DocPreviewRequest request = DocPreviewRequest.docPreviewRequestWith()
             .notificationType(NotificationType.LETTER)
@@ -1240,14 +1380,14 @@ public class NotificationControllerTest {
         when(serviceContactRepository.findByServiceName(any())).thenReturn(Optional.of(buildServiceContactForAddress()));
 
         TemplatePreview response = new TemplatePreview(
-            "{                                                             " +
-                "\"id\": \"3333960c-4ffa-42db-806c-451a68c56e09\"," +
-                "\"type\": \"letter\"," +
-                "\"version\": 11," +
-                "\"body\": \"Dear Sir/Madam\"," +
-                "\"subject\": \"HMCTS refund request approved\"," +
-                "\"html\": \"Dear Sir/Madam\"," +
-                "}");
+            "{                                                             "
+                + "\"id\": \"3333960c-4ffa-42db-806c-451a68c56e09\","
+                + "\"type\": \"letter\","
+                + "\"version\": 11,"
+                + "\"body\": \"Dear Sir/Madam\","
+                + "\"subject\": \"HMCTS refund request approved\","
+                + "\"html\": \"Dear Sir/Madam\","
+                + "}");
         when(notificationLetterClient.generateTemplatePreview(any(), anyMap())).thenReturn(response);
         when(notificationRefundReasonRepository.findByRefundReasonCode(any())).thenReturn(Optional.of(
             NotificationRefundReasons.notificationRefundReasonWith()
@@ -1271,7 +1411,7 @@ public class NotificationControllerTest {
     }
 
     @Test
-    public void createLetterNotificationWithTemplatePreviewReturnSuccess() throws Exception {
+    void createLetterNotificationWithTemplatePreviewReturnSuccess() throws Exception {
         mockUserinfoCall(idamUserIDResponseSupplier.get());
         RefundNotificationLetterRequest request = RefundNotificationLetterRequest.refundNotificationLetterRequestWith()
             .notificationType(NotificationType.EMAIL)
@@ -1309,21 +1449,27 @@ public class NotificationControllerTest {
                                  .build())
             .build();
         when(serviceContactRepository.findByServiceName(any())).thenReturn(Optional.of(buildServiceContactForEmail()));
-        when(notificationRefundReasonRepository.findByRefundReasonCode(any())).thenReturn(Optional.of(NotificationRefundReasons.notificationRefundReasonWith().refundReasonNotification("There has been an amendment to your claim").build()
+        when(notificationRefundReasonRepository.findByRefundReasonCode(any()))
+            .thenReturn(Optional.of(
+                NotificationRefundReasons
+                    .notificationRefundReasonWith()
+                    .refundReasonNotification("There has been an amendment to your claim")
+                    .build()
         ));
 
-        SendLetterResponse response = new SendLetterResponse("{\"content\":{\"body\":\"Hello Unknown\\r\\n\\r\\nRefund Approved on 2022-01-01\"," +
-                                                                 "\"subject\":\"Refund Notification\"},\"id\":\"0f101e0-6ab8-4a83-8ebd-124d648dd282\"," +
-                                                                 "\"reference\":\"string\",\"scheduled_for\":null,\"template\":{\"id\":" +
-                                                                 "\"0f101e0-6ab8-4a83-8ebd-124d648dd282\",\"uri\":" +
-                                                                 "\"https://api.notifications.service\"," +
-                                                                 "\"version\":1},\"uri\":\"https://api.notifications.service\"}\n");
+        SendLetterResponse response = new SendLetterResponse(
+            "{\"content\":{\"body\":\"Hello Unknown\\r\\n\\r\\nRefund Approved on 2022-01-01\","
+                + "\"subject\":\"Refund Notification\"},\"id\":\"0f101e0-6ab8-4a83-8ebd-124d648dd282\","
+                + "\"reference\":\"string\",\"scheduled_for\":null,\"template\":{\"id\":"
+                + "\"0f101e0-6ab8-4a83-8ebd-124d648dd282\",\"uri\":"
+                + "\"https://api.notifications.service\","
+                + "\"version\":1},\"uri\":\"https://api.notifications.service\"}\n");
         Notification notification = Notification.builder().build();
 
         when(notificationLetterClient.sendLetter(any(), any(), any())).thenReturn(response);
         when(notificationRepository.save(notification)).thenReturn(notification);
 
-        MvcResult result = mockMvc.perform(post("/notifications/letter")
+        mockMvc.perform(post("/notifications/letter")
                                                .content(asJsonString(request))
                                                .header("Authorization", "user")
                                                .header("ServiceAuthorization", "Services")
@@ -1334,7 +1480,7 @@ public class NotificationControllerTest {
     }
 
     @Test
-    public void createEmailNotificationWithTemplatePreviewReturnSuccess() throws Exception {
+    void createEmailNotificationWithTemplatePreviewReturnSuccess() throws Exception {
         mockUserinfoCall(idamUserIDResponseSupplier.get());
         RefundNotificationEmailRequest request = RefundNotificationEmailRequest.refundNotificationEmailRequestWith()
             .notificationType(NotificationType.EMAIL)
@@ -1359,20 +1505,26 @@ public class NotificationControllerTest {
             .build();
         when(serviceContactRepository.findByServiceName(any())).thenReturn(Optional.of(buildServiceContactForEmail()));
 
-        SendEmailResponse response = new SendEmailResponse("{\"content\":{\"body\":\"Hello Unknown, your reference is string\\r\\n\\r\\nRefund Approved\\" +
-                                                               "r\\n\\r\\nThanks\",\"from_email\":\"test@gov.uk\",\"subject\":" +
-                                                               "\"Refund Notification Approval\"},\"id\":\"10f101e0-6ab8-4a83-8ebd-124d648dd282\"," +
-                                                               "\"reference\":\"string\",\"scheduled_for\":null,\"template\":" +
-                                                               "{\"id\":\"10f101e0-6ab8-4a83-8ebd-124d648dd282\",\"uri\":" +
-                                                               "\"https://api.notifications.service.gov.uk/services\"" +
-                                                               ",\"version\":1},\"uri\":\"https://api.notifications.service.gov.uk\"}\n");
+        SendEmailResponse response = new SendEmailResponse(
+            "{\"content\":{\"body\":\"Hello Unknown, your reference is string\\r\\n\\r\\nRefund Approved\\"
+                + "r\\n\\r\\nThanks\",\"from_email\":\"test@gov.uk\",\"subject\":"
+                + "\"Refund Notification Approval\"},\"id\":\"10f101e0-6ab8-4a83-8ebd-124d648dd282\","
+                + "\"reference\":\"string\",\"scheduled_for\":null,\"template\":"
+                + "{\"id\":\"10f101e0-6ab8-4a83-8ebd-124d648dd282\",\"uri\":"
+                + "\"https://api.notifications.service.gov.uk/services\""
+                + ",\"version\":1},\"uri\":\"https://api.notifications.service.gov.uk\"}\n");
         Notification notification = Notification.builder().build();
 
         when(notificationEmailClient.sendEmail(any(), any(), any(), any())).thenReturn(response);
         when(notificationRepository.save(notification)).thenReturn(notification);
-        when(notificationRefundReasonRepository.findByRefundReasonCode(any())).thenReturn(Optional.of(NotificationRefundReasons.notificationRefundReasonWith().refundReasonNotification("There has been an amendment to your claim").build()
+        when(notificationRefundReasonRepository.findByRefundReasonCode(any()))
+            .thenReturn(Optional.of(
+                NotificationRefundReasons
+                    .notificationRefundReasonWith()
+                    .refundReasonNotification("There has been an amendment to your claim")
+                    .build()
         ));
-        MvcResult result = mockMvc.perform(post("/notifications/email")
+        mockMvc.perform(post("/notifications/email")
                                                .content(asJsonString(request))
                                                .header("Authorization", "user")
                                                .header("ServiceAuthorization", "Services")
@@ -1383,14 +1535,15 @@ public class NotificationControllerTest {
     }
 
     private void mockGenerateEmailTemplatePreview() throws NotificationClientException {
-        TemplatePreview response = new TemplatePreview("{                                                             "+
-                                                           "\"id\": \"3333960c-4ffa-42db-806c-451a68c56e09\","+
-                                                           "\"type\": \"letter\","+
-                                                           "\"version\": 11,"+
-                                                           "\"body\": \"Dear Sir/Madam\","+
-                                                           "\"subject\": \"HMCTS refund request approved\","+
-                                                           "\"html\": \"Dear Sir/Madam\","+
-                                                           "}");
+        TemplatePreview response = new TemplatePreview(
+            "{                                                             "
+                + "\"id\": \"3333960c-4ffa-42db-806c-451a68c56e09\","
+                + "\"type\": \"letter\","
+                + "\"version\": 11,"
+                + "\"body\": \"Dear Sir/Madam\","
+                + "\"subject\": \"HMCTS refund request approved\","
+                + "\"html\": \"Dear Sir/Madam\","
+                + "}");
         when(notificationEmailClient.generateTemplatePreview(any(), anyMap())).thenReturn(response);
         when(notificationTemplateResponseMapper.toFromMapper(any(), any())).thenReturn(FromTemplateContact
                                                                                     .buildFromTemplateContactWith()
@@ -1399,14 +1552,15 @@ public class NotificationControllerTest {
     }
 
     private void mockGenerateLetterTemplatePreview() throws NotificationClientException {
-        TemplatePreview response = new TemplatePreview("{                                                             "+
-                                                           "\"id\": \"3333960c-4ffa-42db-806c-451a68c56e09\","+
-                                                           "\"type\": \"letter\","+
-                                                           "\"version\": 11,"+
-                                                           "\"body\": \"Dear Sir/Madam\","+
-                                                           "\"subject\": \"HMCTS refund request approved\","+
-                                                           "\"html\": \"Dear Sir/Madam\","+
-                                                           "}");
+        TemplatePreview response = new TemplatePreview(
+            "{                                                             "
+                + "\"id\": \"3333960c-4ffa-42db-806c-451a68c56e09\","
+                + "\"type\": \"letter\","
+                + "\"version\": 11,"
+                + "\"body\": \"Dear Sir/Madam\","
+                + "\"subject\": \"HMCTS refund request approved\","
+                + "\"html\": \"Dear Sir/Madam\","
+                + "}");
         when(notificationLetterClient.generateTemplatePreview(any(), anyMap())).thenReturn(response);
         when(notificationTemplateResponseMapper.toFromMapper(any(), any())).thenReturn(FromTemplateContact
                                                                                     .buildFromTemplateContactWith()
@@ -1422,7 +1576,7 @@ public class NotificationControllerTest {
                                                                                     .build());
     }
 
-    private ServiceContact buildServiceContactForEmail(){
+    private ServiceContact buildServiceContactForEmail() {
 
         return ServiceContact
             .serviceContactWith().id(1)
@@ -1432,7 +1586,7 @@ public class NotificationControllerTest {
             .build();
     }
 
-    private ServiceContact buildServiceContactForAddress(){
+    private ServiceContact buildServiceContactForAddress() {
 
         return ServiceContact
             .serviceContactWith().id(1)

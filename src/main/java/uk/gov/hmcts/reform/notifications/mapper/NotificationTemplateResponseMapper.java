@@ -3,9 +3,9 @@ package uk.gov.hmcts.reform.notifications.mapper;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.notifications.dtos.request.DocPreviewRequest;
 import uk.gov.hmcts.reform.notifications.dtos.response.FromTemplateContact;
+import uk.gov.hmcts.reform.notifications.dtos.response.MailAddress;
 import uk.gov.hmcts.reform.notifications.dtos.response.NotificationTemplatePreviewResponse;
 import uk.gov.hmcts.reform.notifications.dtos.response.RecipientContact;
-import uk.gov.hmcts.reform.notifications.dtos.response.MailAddress;
 import uk.gov.hmcts.reform.notifications.model.ServiceContact;
 import uk.gov.service.notify.TemplatePreview;
 
@@ -17,7 +17,7 @@ public class NotificationTemplateResponseMapper {
 
     public NotificationTemplatePreviewResponse notificationPreviewResponse(TemplatePreview templatePreview,
                                                                            DocPreviewRequest docPreviewRequest,
-                                                                           ServiceContact serviceContact){
+                                                                           ServiceContact serviceContact) {
 
         return NotificationTemplatePreviewResponse.buildNotificationTemplatePreviewWith()
             .templateId(templatePreview.getId().toString())
@@ -30,10 +30,10 @@ public class NotificationTemplateResponseMapper {
             .build();
     }
 
-    private String toHtmlMapper(TemplatePreview templatePreview){
+    private String toHtmlMapper(TemplatePreview templatePreview) {
 
         String html = null;
-        if(templatePreview.getHtml().isPresent()){
+        if (templatePreview.getHtml().isPresent()) {
             html = templatePreview.getHtml().get();
         }
         return html;
@@ -50,10 +50,8 @@ public class NotificationTemplateResponseMapper {
     private String toEmailMapper(DocPreviewRequest docPreviewReques) {
 
         String email = null;
-        if(EMAIL.equalsIgnoreCase(docPreviewReques.getNotificationType().name())) {
-
+        if (EMAIL.equalsIgnoreCase(docPreviewReques.getNotificationType().name())) {
             email = docPreviewReques.getRecipientEmailAddress();
-
         }
 
         return email;
@@ -62,7 +60,7 @@ public class NotificationTemplateResponseMapper {
     private MailAddress toMailMapper(DocPreviewRequest docPreviewRequest) {
 
         MailAddress recipientMailAddress = null;
-        if(LETTER.equalsIgnoreCase(docPreviewRequest.getNotificationType().name())) {
+        if (LETTER.equalsIgnoreCase(docPreviewRequest.getNotificationType().name())) {
 
             recipientMailAddress = MailAddress.buildRecipientMailAddressWith()
                 .addressLine(docPreviewRequest.getRecipientPostalAddress().getAddressLine())
@@ -87,8 +85,8 @@ public class NotificationTemplateResponseMapper {
     private String toFromEmailMapper(String notificationType, ServiceContact serviceContact) {
 
         String email = null;
-        if(EMAIL.equalsIgnoreCase(notificationType)) {
-           email = serviceContact.getFromEmailAddress();
+        if (EMAIL.equalsIgnoreCase(notificationType)) {
+            email = serviceContact.getFromEmailAddress();
         }
         return email;
     }
@@ -96,7 +94,7 @@ public class NotificationTemplateResponseMapper {
     private MailAddress toFromMailMapper(String notificationType, ServiceContact serviceContact) {
 
         MailAddress fromMailAddress = null;
-        if(null != serviceContact.getFromMailAddress() && LETTER.equalsIgnoreCase(notificationType)){
+        if (null != serviceContact.getFromMailAddress() && LETTER.equalsIgnoreCase(notificationType)) {
 
             fromMailAddress = MailAddress.buildRecipientMailAddressWith()
                 .addressLine(serviceContact.getFromMailAddress().getAddressLine())

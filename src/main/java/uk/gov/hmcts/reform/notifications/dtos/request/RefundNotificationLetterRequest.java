@@ -3,6 +3,9 @@ package uk.gov.hmcts.reform.notifications.dtos.request;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -11,10 +14,6 @@ import lombok.Setter;
 import org.springframework.beans.factory.annotation.Value;
 import uk.gov.hmcts.reform.notifications.dtos.enums.NotificationType;
 import uk.gov.hmcts.reform.notifications.model.TemplatePreviewDto;
-
-import javax.validation.Valid;
-import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
 
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 @Setter

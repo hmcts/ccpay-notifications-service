@@ -10,7 +10,7 @@ import uk.gov.hmcts.reform.notifications.model.Notification;
 @Component
 public class EmailNotificationMapper {
 
-    public Notification emailResponseMapper( RefundNotificationEmailRequest emailNotificationRequest, IdamUserIdResponse uid) {
+    public Notification emailResponseMapper(RefundNotificationEmailRequest emailNotificationRequest, IdamUserIdResponse uid) {
         ContactDetails contactDetailsList = ContactDetails.contactDetailsWith()
                                    .email(emailNotificationRequest.getRecipientEmailAddress())
                                    .createdBy(uid.getUid())

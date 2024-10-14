@@ -2,12 +2,13 @@ package uk.gov.hmcts.reform.notifications.dtos.response;
 
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
-import java.util.Date;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+
+import java.util.Date;
 
 @Builder(builderMethodName = "buildContactDetailsWith")
 @AllArgsConstructor
