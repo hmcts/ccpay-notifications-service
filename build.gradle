@@ -105,7 +105,6 @@ task smoke(type: Test) {
 
 checkstyle {
   maxWarnings = 0
-//  toolVersion = '8.29'
   getConfigDirectory().set(new File(rootDir, 'config/checkstyle'))
   checkstyleMain.enabled = true
   checkstyleTest.enabled = true
@@ -113,7 +112,6 @@ checkstyle {
 
 
 pmd {
-//  toolVersion = "6.55.0"
   sourceSets = [sourceSets.main, sourceSets.test, sourceSets.functionalTest, sourceSets.integrationTest]
   reportsDir = file("$project.buildDir/reports/pmd")
   // https://github.com/pmd/pmd/issues/876
