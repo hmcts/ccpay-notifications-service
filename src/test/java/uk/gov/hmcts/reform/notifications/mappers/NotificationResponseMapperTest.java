@@ -1,10 +1,5 @@
 package uk.gov.hmcts.reform.notifications.mappers;
 
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -12,12 +7,18 @@ import org.springframework.test.context.ActiveProfiles;
 import uk.gov.hmcts.reform.notifications.dtos.response.ContactDetailsDto;
 import uk.gov.hmcts.reform.notifications.dtos.response.FromTemplateContact;
 import uk.gov.hmcts.reform.notifications.dtos.response.MailAddress;
+import uk.gov.hmcts.reform.notifications.dtos.response.NotificationDto;
 import uk.gov.hmcts.reform.notifications.dtos.response.NotificationTemplatePreviewResponse;
 import uk.gov.hmcts.reform.notifications.mapper.NotificationResponseMapper;
-import uk.gov.hmcts.reform.notifications.dtos.response.NotificationDto;
 import uk.gov.hmcts.reform.notifications.model.ContactDetails;
 import uk.gov.hmcts.reform.notifications.model.Notification;
 import uk.gov.hmcts.reform.notifications.model.TemplatePreviewDto;
+
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.MOCK;
@@ -25,7 +26,7 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
 @ActiveProfiles({"local", "test"})
 @SpringBootTest(webEnvironment = MOCK)
 @SuppressWarnings("PMD")
-public class NotificationResponseMapperTest {
+class NotificationResponseMapperTest {
 
     @Autowired
     private NotificationResponseMapper notificationResponseMapper;
@@ -57,7 +58,7 @@ public class NotificationResponseMapperTest {
 
             )
             .sentNotification(NotificationTemplatePreviewResponse.buildNotificationTemplatePreviewWith()
-                                .templateId(getUUID().toString())
+                                .templateId(getUuid().toString())
                                  .html("test")
                                  .body("test")
                                  .subject("testSubject")
@@ -94,7 +95,7 @@ public class NotificationResponseMapperTest {
             .dateCreated(dateObject)
             .contactDetails(getContact())
             .templatePreview(TemplatePreviewDto.templatePreviewDtoWith()
-                                 .id(getUUID())
+                                 .id(getUuid())
                                   .html("test")
                                   .body("test")
                                   .subject("testSubject")
@@ -119,18 +120,18 @@ public class NotificationResponseMapperTest {
     }
 
     @Test
-    public void testGetNotificationResponseMapper() {
+    void testGetNotificationResponseMapper() {
 
-        NotificationDto  notificationDto= notificationResponseMapper
+        NotificationDto  notificationDto = notificationResponseMapper
             .notificationResponse(refundListSupplierBasedOnRefundReference());
 
         assertThat(notificationDto.getNotificationType()).isEqualTo(getNotificationdeatils().getNotificationType());
         assertThat(notificationDto.getSentNotification().getSubject()).isEqualTo(getNotificationdeatils().getSentNotification().getSubject());
     }
 
-    private UUID getUUID(){
+    private UUID getUuid() {
 
         String superSecretId = "f000aa01-0451-4000-b000-000000000000";
-       return UUID.fromString(superSecretId);
+        return UUID.fromString(superSecretId);
     }
 }

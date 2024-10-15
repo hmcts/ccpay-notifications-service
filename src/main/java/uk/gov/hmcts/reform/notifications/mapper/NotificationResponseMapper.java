@@ -15,7 +15,7 @@ public class NotificationResponseMapper {
     private static final String EMAIL = "EMAIL";
     private static final String LETTER = "LETTER";
 
-    public NotificationDto notificationResponse(Notification notification){
+    public NotificationDto notificationResponse(Notification notification) {
 
         return NotificationDto.buildNotificationWith()
             .notificationType(notification.getNotificationType())
@@ -39,9 +39,9 @@ public class NotificationResponseMapper {
             .build();
     }
 
-    private NotificationTemplatePreviewResponse toSentNotification(Notification notification){
+    private NotificationTemplatePreviewResponse toSentNotification(Notification notification) {
 
-          return NotificationTemplatePreviewResponse.buildNotificationTemplatePreviewWith()
+        return NotificationTemplatePreviewResponse.buildNotificationTemplatePreviewWith()
               .templateId(notification.getTemplatePreview().getId().toString())
               .templateType(notification.getTemplatePreview().getTemplateType())
               .subject(notification.getTemplatePreview().getSubject())
@@ -61,12 +61,9 @@ public class NotificationResponseMapper {
     }
 
     private String toEmailMapper(Notification notification) {
-
         String email = null;
-        if(EMAIL.equalsIgnoreCase(notification.getNotificationType())) {
-
+        if (EMAIL.equalsIgnoreCase(notification.getNotificationType())) {
             email = notification.getContactDetails().getEmail();
-
         }
 
         return email;
@@ -75,7 +72,7 @@ public class NotificationResponseMapper {
     private MailAddress toMailMapper(Notification notification) {
 
         MailAddress recipientMailAddress = null;
-        if(LETTER.equalsIgnoreCase(notification.getNotificationType())) {
+        if (LETTER.equalsIgnoreCase(notification.getNotificationType())) {
 
             recipientMailAddress = MailAddress.buildRecipientMailAddressWith()
                 .addressLine(notification.getContactDetails().getAddressLine())
@@ -101,7 +98,7 @@ public class NotificationResponseMapper {
     private String toFromEmailMapper(Notification notification) {
 
         String email = null;
-        if(EMAIL.equalsIgnoreCase(notification.getNotificationType())) {
+        if (EMAIL.equalsIgnoreCase(notification.getNotificationType())) {
             email = notification.getTemplatePreview().getFrom().getFromEmailAddress();
         }
         return email;
@@ -110,7 +107,7 @@ public class NotificationResponseMapper {
     private MailAddress toFromMailMapper(Notification notification) {
 
         MailAddress fromMailAddress = null;
-        if(null !=notification.getTemplatePreview().getFrom().getFromMailAddress() && LETTER.equalsIgnoreCase(notification.getNotificationType())) {
+        if (null != notification.getTemplatePreview().getFrom().getFromMailAddress() && LETTER.equalsIgnoreCase(notification.getNotificationType())) {
 
             fromMailAddress = MailAddress.buildRecipientMailAddressWith()
                 .addressLine(notification.getTemplatePreview().getFrom().getFromMailAddress().getAddressLine())

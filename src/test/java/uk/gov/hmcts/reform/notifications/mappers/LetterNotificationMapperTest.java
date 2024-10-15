@@ -1,7 +1,5 @@
 package uk.gov.hmcts.reform.notifications.mappers;
 
-import java.util.Arrays;
-import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,14 +14,17 @@ import uk.gov.hmcts.reform.notifications.mapper.LetterNotificationMapper;
 import uk.gov.hmcts.reform.notifications.model.Notification;
 import uk.gov.service.notify.SendLetterResponse;
 
-import static org.junit.Assert.assertEquals;
+import java.util.Arrays;
+import java.util.UUID;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.when;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.MOCK;
 
 @ActiveProfiles({"local", "test"})
 @SpringBootTest(webEnvironment = MOCK)
 @SuppressWarnings("PMD")
-public class LetterNotificationMapperTest {
+class LetterNotificationMapperTest {
 
     @Autowired
     private LetterNotificationMapper letterNotificationMapper;
@@ -32,11 +33,11 @@ public class LetterNotificationMapperTest {
     private  SendLetterResponse sendLetterResponse;
 
     @Test
-    public void testLetterNotificationMapper() {
+    void testLetterNotificationMapper() {
         when(sendLetterResponse.getTemplateId()).thenReturn(UUID.fromString("8833960c-4ffa-42db-806c-451a68c56e98"));
         when(sendLetterResponse.getReference()).thenReturn(java.util.Optional.of("RF-123"));
 
-        Notification  notification= letterNotificationMapper.letterResponseMapper(sendLetterResponse,getRefundNotification(),IDAM_USER_ID_RESPONSE);
+        Notification  notification = letterNotificationMapper.letterResponseMapper(sendLetterResponse,getRefundNotification(),IDAM_USER_ID_RESPONSE);
         assertEquals("LETTER", notification.getNotificationType());
         assertEquals("RF-123", notification.getReference());
         assertEquals("8833960c-4ffa-42db-806c-451a68c56e98", notification.getTemplateId());
@@ -46,7 +47,7 @@ public class LetterNotificationMapperTest {
 
     }
 
-    private RefundNotificationLetterRequest getRefundNotification(){
+    private RefundNotificationLetterRequest getRefundNotification() {
         return RefundNotificationLetterRequest.refundNotificationLetterRequestWith()
             .notificationType(NotificationType.LETTER)
             .recipientPostalAddress(getRecipientPostalAddress())
@@ -56,7 +57,7 @@ public class LetterNotificationMapperTest {
             .build();
     }
 
-    private RecipientPostalAddress getRecipientPostalAddress(){
+    private RecipientPostalAddress getRecipientPostalAddress() {
         return RecipientPostalAddress.recipientPostalAddressWith()
             .addressLine("11 King street")
             .postalCode("e146kk")
@@ -67,7 +68,7 @@ public class LetterNotificationMapperTest {
 
     }
 
-    private Personalisation getPersonalisation(){
+    private Personalisation getPersonalisation() {
 
         return Personalisation.personalisationRequestWith()
             .ccdCaseNumber("1111222233334444")

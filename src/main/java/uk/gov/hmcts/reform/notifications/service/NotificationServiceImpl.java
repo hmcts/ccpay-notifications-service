@@ -1,12 +1,5 @@
 package uk.gov.hmcts.reform.notifications.service;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
-
-import java.util.Map;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -14,7 +7,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.*;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatusCode;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.MultiValueMap;
@@ -22,9 +19,20 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 import uk.gov.hmcts.reform.notifications.config.PostcodeLookupConfiguration;
 import uk.gov.hmcts.reform.notifications.config.security.idam.IdamService;
-import uk.gov.hmcts.reform.notifications.dtos.request.*;
-import uk.gov.hmcts.reform.notifications.dtos.response.*;
-import uk.gov.hmcts.reform.notifications.exceptions.*;
+import uk.gov.hmcts.reform.notifications.dtos.request.DocPreviewRequest;
+import uk.gov.hmcts.reform.notifications.dtos.request.Personalisation;
+import uk.gov.hmcts.reform.notifications.dtos.request.RecipientPostalAddress;
+import uk.gov.hmcts.reform.notifications.dtos.request.RefundNotificationEmailRequest;
+import uk.gov.hmcts.reform.notifications.dtos.request.RefundNotificationLetterRequest;
+import uk.gov.hmcts.reform.notifications.dtos.response.IdamUserIdResponse;
+import uk.gov.hmcts.reform.notifications.dtos.response.NotificationResponseDto;
+import uk.gov.hmcts.reform.notifications.dtos.response.NotificationTemplatePreviewResponse;
+import uk.gov.hmcts.reform.notifications.dtos.response.PostCodeResponse;
+import uk.gov.hmcts.reform.notifications.exceptions.NotificationListEmptyException;
+import uk.gov.hmcts.reform.notifications.exceptions.NotificationNotFoundException;
+import uk.gov.hmcts.reform.notifications.exceptions.PostCodeLookUpException;
+import uk.gov.hmcts.reform.notifications.exceptions.PostCodeLookUpNotFoundException;
+import uk.gov.hmcts.reform.notifications.exceptions.RefundReasonNotFoundException;
 import uk.gov.hmcts.reform.notifications.mapper.EmailNotificationMapper;
 import uk.gov.hmcts.reform.notifications.mapper.LetterNotificationMapper;
 import uk.gov.hmcts.reform.notifications.mapper.NotificationResponseMapper;
@@ -37,7 +45,17 @@ import uk.gov.hmcts.reform.notifications.repository.NotificationRefundReasonRepo
 import uk.gov.hmcts.reform.notifications.repository.NotificationRepository;
 import uk.gov.hmcts.reform.notifications.repository.ServiceContactRepository;
 import uk.gov.hmcts.reform.notifications.util.GovNotifyExceptionWrapper;
-import uk.gov.service.notify.*;
+import uk.gov.service.notify.NotificationClientApi;
+import uk.gov.service.notify.NotificationClientException;
+import uk.gov.service.notify.SendEmailResponse;
+import uk.gov.service.notify.SendLetterResponse;
+import uk.gov.service.notify.TemplatePreview;
+
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 @Service
 @SuppressWarnings({"PMD.TooManyFields", "PMD.ExcessiveImports", "PMD.TooManyMethods", "PMD.GodClass","PMD.CyclomaticComplexity"})
@@ -116,19 +134,20 @@ public class NotificationServiceImpl implements NotificationService {
 
     @Autowired
     ObjectMapper objectMapper;
+
     @Override
     public SendEmailResponse sendEmailNotification(RefundNotificationEmailRequest emailNotificationRequest, MultiValueMap<String, String> headers) {
         try {
-            LOG.info("sendEmailNotification -->" +emailNotificationRequest.toString());
+            LOG.info("sendEmailNotification -->" + emailNotificationRequest.toString());
 
             Optional<ServiceContact> serviceContactOptional = serviceContactRepository.findByServiceName(emailNotificationRequest.getServiceName());
             ServiceContact serviceContact = new ServiceContact();
 
-            if(serviceContactOptional.isPresent()){
+            if (serviceContactOptional.isPresent()) {
                 serviceContact = serviceContactOptional.get();
             }
 
-            IdamUserIdResponse uid = idamService.getUserId(headers);
+            final IdamUserIdResponse uid = idamService.getUserId(headers);
             LOG.info("Refund reason in sendEmailNotification {}", emailNotificationRequest.getPersonalisation().getRefundReason());
             String refundReason = getRefundReason(emailNotificationRequest.getPersonalisation().getRefundReason());
             TemplatePreviewDto templatePreviewDto = emailNotificationRequest.getTemplatePreview();
@@ -142,10 +161,10 @@ public class NotificationServiceImpl implements NotificationService {
                                                    emailNotificationRequest.getPersonalisation().getCcdCaseNumber(),
                                                    refundReason)
                     );
-                templatePreviewDto = buildTemplatePreviewDTO(templatePreview, EMAIL, serviceContact);
+                templatePreviewDto = buildTemplatePreviewDto(templatePreview, EMAIL, serviceContact);
             }
             LOG.info("Before sending mail to Notification Client ");
-            SendEmailResponse sendEmailResponse = notificationEmailClient
+            final SendEmailResponse sendEmailResponse = notificationEmailClient
                 .sendEmail(
                     emailNotificationRequest.getTemplateId(),
                     emailNotificationRequest.getRecipientEmailAddress(),
@@ -165,7 +184,7 @@ public class NotificationServiceImpl implements NotificationService {
             LOG.info("email notification saved successfully.");
 
             return sendEmailResponse;
-        }catch (NotificationClientException exception){
+        } catch (NotificationClientException exception) {
             GovNotifyExceptionWrapper exceptionWrapper = new GovNotifyExceptionWrapper();
             LOG.error(exception.getMessage());
             throw exceptionWrapper.mapGovNotifyEmailException(exception);
@@ -173,18 +192,21 @@ public class NotificationServiceImpl implements NotificationService {
     }
 
     @Override
-    public SendLetterResponse sendLetterNotification(RefundNotificationLetterRequest letterNotificationRequest, MultiValueMap<String, String> headers) {
+    public SendLetterResponse sendLetterNotification(
+        RefundNotificationLetterRequest letterNotificationRequest,
+        MultiValueMap<String, String> headers
+    ) {
 
         try {
             Optional<ServiceContact> serviceContactOptional = serviceContactRepository.findByServiceName(letterNotificationRequest.getServiceName());
 
             ServiceContact serviceContact = new ServiceContact();
 
-            if(serviceContactOptional.isPresent()){
+            if (serviceContactOptional.isPresent()) {
                 serviceContact = serviceContactOptional.get();
             }
 
-            IdamUserIdResponse uid = idamService.getUserId(headers);
+            final IdamUserIdResponse uid = idamService.getUserId(headers);
 
             TemplatePreviewDto templatePreviewDto = letterNotificationRequest.getTemplatePreview();
             String refundReason = getRefundReason(letterNotificationRequest.getPersonalisation().getRefundReason());
@@ -193,19 +215,25 @@ public class NotificationServiceImpl implements NotificationService {
                 TemplatePreview templatePreview = notificationLetterClient
                     .generateTemplatePreview(
                         letterNotificationRequest.getTemplateId(),
-                        createLetterPersonalisation(letterNotificationRequest.getRecipientPostalAddress(),letterNotificationRequest.getPersonalisation(),serviceContact.getServiceMailbox(),
-                                                    letterNotificationRequest.getPersonalisation().getRefundReference(),
-                                                    letterNotificationRequest.getPersonalisation().getCcdCaseNumber(), refundReason)
+                        createLetterPersonalisation(
+                            letterNotificationRequest.getRecipientPostalAddress(),
+                            letterNotificationRequest.getPersonalisation(),
+                            serviceContact.getServiceMailbox(),
+                            letterNotificationRequest.getPersonalisation().getRefundReference(),
+                            letterNotificationRequest.getPersonalisation().getCcdCaseNumber(), refundReason)
                     );
-                templatePreviewDto = buildTemplatePreviewDTO(templatePreview, LETTER, serviceContact);
+                templatePreviewDto = buildTemplatePreviewDto(templatePreview, LETTER, serviceContact);
             }
             LOG.info("templatePreviewDto {}",templatePreviewDto);
             SendLetterResponse sendLetterResponse = notificationLetterClient.sendLetter(
                 letterNotificationRequest.getTemplateId(),
-                createLetterPersonalisation(letterNotificationRequest.getRecipientPostalAddress(),letterNotificationRequest.getPersonalisation(),serviceContact.getServiceMailbox(),
-                                            letterNotificationRequest.getPersonalisation().getRefundReference(),
-                                            letterNotificationRequest.getPersonalisation().getCcdCaseNumber(),
-                                            refundReason),
+                createLetterPersonalisation(
+                    letterNotificationRequest.getRecipientPostalAddress(),
+                    letterNotificationRequest.getPersonalisation(),
+                    serviceContact.getServiceMailbox(),
+                    letterNotificationRequest.getPersonalisation().getRefundReference(),
+                    letterNotificationRequest.getPersonalisation().getCcdCaseNumber(),
+                    refundReason),
                 letterNotificationRequest.getReference()
             );
             LOG.info("sendLetterResponse {}",sendLetterResponse.getBody());
@@ -219,7 +247,7 @@ public class NotificationServiceImpl implements NotificationService {
             notificationRepository.save(notification);
             LOG.info("Letter notification saved successfully.");
             return sendLetterResponse;
-        }catch (NotificationClientException exception){
+        } catch (NotificationClientException exception) {
             GovNotifyExceptionWrapper exceptionWrapper = new GovNotifyExceptionWrapper();
             LOG.error(exception.getMessage());
             throw exceptionWrapper.mapGovNotifyLetterException(exception);
@@ -236,8 +264,14 @@ public class NotificationServiceImpl implements NotificationService {
                       "reason", refundReason);
     }
 
-    private Map<String, Object> createLetterPersonalisation(RecipientPostalAddress recipientPostalAddress, Personalisation personalisation, String serviceMailBox,
-                                                            String refundRef, String ccdCaseNumber, String refundReason ) {
+    private Map<String, Object> createLetterPersonalisation(
+        RecipientPostalAddress recipientPostalAddress,
+        Personalisation personalisation,
+        String serviceMailBox,
+        String refundRef,
+        String ccdCaseNumber,
+        String refundReason
+    ) {
 
         return Map.of("address_line_1", recipientPostalAddress.getAddressLine(),
                       "address_line_2", recipientPostalAddress.getCity(),
@@ -264,7 +298,7 @@ public class NotificationServiceImpl implements NotificationService {
                                    .collect(Collectors.toList()))
                 .build();
             LOG.info("Notification Response prepared from getNotification {}",notificationResponseDto);
-        }else {
+        } else {
             throw new NotificationListEmptyException("Notification has not been sent for this refund");
         }
         return notificationResponseDto;
@@ -275,7 +309,7 @@ public class NotificationServiceImpl implements NotificationService {
 
         TemplatePreview templatePreview;
         NotificationTemplatePreviewResponse notificationTemplatePreviewResponse;
-        String instructionType ;
+        String instructionType;
         String refundRef = getRefundReference(docPreviewRequest);
         LOG.info("Refund reference in previewNotification {}", refundRef);
         String refundReason = getRefundReason(docPreviewRequest.getPersonalisation().getRefundReason());
@@ -286,7 +320,7 @@ public class NotificationServiceImpl implements NotificationService {
         Optional<ServiceContact> serviceContactOptional = serviceContactRepository.findByServiceName(docPreviewRequest.getServiceName());
         ServiceContact serviceContact = new ServiceContact();
 
-        if(serviceContactOptional.isPresent()){
+        if (serviceContactOptional.isPresent()) {
             serviceContact = serviceContactOptional.get();
         }
 
@@ -294,7 +328,7 @@ public class NotificationServiceImpl implements NotificationService {
 
         String templateId = getTemplate(docPreviewRequest, instructionType);
         try {
-            if(EMAIL.equalsIgnoreCase(docPreviewRequest.getNotificationType().name())) {
+            if (EMAIL.equalsIgnoreCase(docPreviewRequest.getNotificationType().name())) {
                 templatePreview = notificationEmailClient
                     .generateTemplatePreview(templateId,
                                              createEmailPersonalisation(docPreviewRequest.getPersonalisation(), serviceContact.getServiceMailbox(),
@@ -305,14 +339,19 @@ public class NotificationServiceImpl implements NotificationService {
 
                 templatePreview = notificationLetterClient
                     .generateTemplatePreview(templateId,
-                                             createLetterPersonalisation(docPreviewRequest.getRecipientPostalAddress(),docPreviewRequest.getPersonalisation(), serviceContact.getServiceMailbox(),
-                                                                         refundRef, ccdCaseNumber, refundReason));
+                                             createLetterPersonalisation(
+                                                 docPreviewRequest.getRecipientPostalAddress(),
+                                                 docPreviewRequest.getPersonalisation(),
+                                                 serviceContact.getServiceMailbox(),
+                                                 refundRef,
+                                                 ccdCaseNumber,
+                                                 refundReason));
                 LOG.info("LETTER templatePreview {}", templatePreview);
             }
 
-         notificationTemplatePreviewResponse = notificationTemplateResponseMapper.notificationPreviewResponse(templatePreview,
-                                                                                                              docPreviewRequest,
-                                                                                                              serviceContact);
+            notificationTemplatePreviewResponse = notificationTemplateResponseMapper.notificationPreviewResponse(templatePreview,
+                                                                                                             docPreviewRequest,
+                                                                                                             serviceContact);
         } catch (NotificationClientException exception) {
             LOG.error("NotificationServiceImpl.previewNotification() : {}", exception);
             GovNotifyExceptionWrapper exceptionWrapper = new GovNotifyExceptionWrapper();
@@ -355,19 +394,19 @@ public class NotificationServiceImpl implements NotificationService {
         return templateId;
     }
 
-    private TemplatePreviewDto buildTemplatePreviewDTO(TemplatePreview templatePreview, String notificationType,
+    private TemplatePreviewDto buildTemplatePreviewDto(TemplatePreview templatePreview, String notificationType,
                                                        ServiceContact serviceContact) {
 
-         String subject = null;
-         String html = null;
+        String subject = null;
+        String html = null;
 
         Optional<String> subjectOptional = templatePreview.getSubject();
-        if(subjectOptional.isPresent() && !subjectOptional.isEmpty()) {
+        if (subjectOptional.isPresent()) {
             subject = subjectOptional.get();
         }
 
         Optional<String> htmlOptional = templatePreview.getHtml();
-        if(htmlOptional.isPresent() && !htmlOptional.isEmpty()) {
+        if (htmlOptional.isPresent()) {
             html = htmlOptional.get();
         }
 
@@ -399,36 +438,38 @@ public class NotificationServiceImpl implements NotificationService {
         LOG.info("refundReasonCode >>  {}",refundReasonCode);
         final int refundreasoncodelimit = 5;
         String reasonCode;
-            if (refundReasonCode.length() > refundreasoncodelimit) {
-                reasonCode = refundReasonCode.split("-")[0];
-            } else {
-                reasonCode = refundReasonCode;
-            }
-            LOG.info("reasonCode for searching in Notifications Repo >>  {}", reasonCode);
-            String refundReason;
+        if (refundReasonCode.length() > refundreasoncodelimit) {
+            reasonCode = refundReasonCode.split("-")[0];
+        } else {
+            reasonCode = refundReasonCode;
+        }
+        LOG.info("reasonCode for searching in Notifications Repo >>  {}", reasonCode);
+        String refundReason;
         Optional<NotificationRefundReasons> notificationRefundReasons = notificationRefundReasonRepository.findByRefundReasonCode(reasonCode);
 
-            if (notificationRefundReasons.isPresent()) {
-                refundReason = notificationRefundReasons.get().getRefundReasonNotification();
-            } else {
-                throw new RefundReasonNotFoundException("Invalid Reason Type : " + refundReasonCode);
-            }
-            return refundReason;
+        if (notificationRefundReasons.isPresent()) {
+            refundReason = notificationRefundReasons.get().getRefundReasonNotification();
+        } else {
+            throw new RefundReasonNotFoundException("Invalid Reason Type : " + refundReasonCode);
+        }
+        return refundReason;
     }
 
     private String getRefundReference(DocPreviewRequest docPreviewRequest) {
 
         String refundRef;
-        if(null == docPreviewRequest.getPersonalisation().getRefundReference() || docPreviewRequest.getPersonalisation().getRefundReference().equalsIgnoreCase(STRING)
+        if (null == docPreviewRequest.getPersonalisation().getRefundReference()
+            || docPreviewRequest.getPersonalisation().getRefundReference().equalsIgnoreCase(STRING)
             || docPreviewRequest.getPersonalisation().getRefundReference().isEmpty()) {
             refundRef = "RF-****-****-****-****";
         } else {
             refundRef = docPreviewRequest.getPersonalisation().getRefundReference();
         }
-          return refundRef;
+        return refundRef;
     }
+
     @Override
-    public PostCodeResponse getAddress(String postCode){
+    public PostCodeResponse getAddress(String postCode) {
 
         PostCodeResponse results = null;
         try {
@@ -458,7 +499,7 @@ public class NotificationServiceImpl implements NotificationService {
                     new HttpEntity<>(headers),
                     String.class);
 
-            HttpStatus responseStatus = ((ResponseEntity) response).getStatusCode();
+            HttpStatusCode responseStatus = ((ResponseEntity) response).getStatusCode();
 
             if (responseStatus.value() == org.apache.http.HttpStatus.SC_OK) {
                 results = objectMapper.readValue(response.getBody(), PostCodeResponse.class);
