@@ -1,16 +1,28 @@
 package uk.gov.hmcts.reform.notifications.model;
 
-import lombok.*;
+import io.hypersistence.utils.hibernate.type.json.JsonType;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotNull;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.Type;
-import org.hibernate.annotations.TypeDef;
 import org.hibernate.annotations.UpdateTimestamp;
-import com.vladmihalcea.hibernate.type.json.JsonType;
 
 import java.util.Date;
-
-import javax.persistence.*;
-import javax.validation.constraints.NotNull;
 
 @Entity
 @Getter
@@ -20,7 +32,6 @@ import javax.validation.constraints.NotNull;
 @NoArgsConstructor
 @Data
 @Table(name = "notification")
-@TypeDef(name = "json", typeClass = JsonType.class)
 @ToString
 public class Notification {
     @Id
@@ -56,7 +67,7 @@ public class Notification {
     @OneToOne(fetch = FetchType.EAGER, mappedBy = "notification", cascade = CascadeType.ALL)
     private ContactDetails contactDetails;
 
-    @Type(type = "json")
+    @Type(JsonType.class)
     @Column(columnDefinition = "json", name = "template_preview")
     private TemplatePreviewDto templatePreview;
 }
