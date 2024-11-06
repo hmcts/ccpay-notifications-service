@@ -7,12 +7,12 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.test.context.ActiveProfiles;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
+import uk.gov.hmcts.reform.notifications.config.security.converter.JwtGrantedAuthoritiesConverter;
+import uk.gov.hmcts.reform.notifications.config.security.idam.IdamRepository;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import uk.gov.hmcts.reform.notifications.config.security.converter.JwtGrantedAuthoritiesConverter;
-import uk.gov.hmcts.reform.notifications.config.security.idam.IdamRepository;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -21,7 +21,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.MOCK;
 
 @ActiveProfiles({"local", "test"})
@@ -53,26 +52,26 @@ public class JwtGrantedAuthoritiesConverterTest {
 
     @Test
     void test_shouldReturnEmptyAuthoritiesWhenClaimNotAvailable() {
-        when(jwtMock.containsClaim(anyString())).thenReturn(false);
+        when(jwtMock.hasClaim(anyString())).thenReturn(false);
 
         Collection<GrantedAuthority> authorities = converter.convert(jwtMock);
 
         assertNotNull(authorities);
         assertEquals(0, authorities.size());
-        verify(jwtMock, times(1)).containsClaim(anyString());
+        verify(jwtMock, times(1)).hasClaim(anyString());
         verify(idamRepositoryMock, times(0)).getUserInfo(anyString());
     }
 
     @Test
     void test_shouldReturnEmptyAuthoritiesWhenClaimValueNotEquals() {
-        when(jwtMock.containsClaim(anyString())).thenReturn(true);
+        when(jwtMock.hasClaim(anyString())).thenReturn(true);
         when(jwtMock.getClaim(anyString())).thenReturn("Test");
 
         Collection<GrantedAuthority> authorities = converter.convert(jwtMock);
 
         assertNotNull(authorities);
         assertEquals(0, authorities.size());
-        verify(jwtMock, times(1)).containsClaim(anyString());
+        verify(jwtMock, times(1)).hasClaim(anyString());
         verify(jwtMock, times(1)).getClaim(anyString());
         verify(idamRepositoryMock, times(0)).getUserInfo(anyString());
     }
@@ -81,7 +80,7 @@ public class JwtGrantedAuthoritiesConverterTest {
     void test_shouldReturnEmptyAuthoritiesWhenIdamReturnsNoUsers() {
         List<String> roles = new ArrayList<>();
 
-        when(jwtMock.containsClaim(anyString())).thenReturn(true);
+        when(jwtMock.hasClaim(anyString())).thenReturn(true);
         when(jwtMock.getClaim(anyString())).thenReturn("access_token");
         when(jwtMock.getTokenValue()).thenReturn("access_token");
         when(userInfoMock.getRoles()).thenReturn(roles);
@@ -91,7 +90,7 @@ public class JwtGrantedAuthoritiesConverterTest {
 
         assertNotNull(authorities);
         assertEquals(0, authorities.size());
-        verify(jwtMock, times(1)).containsClaim(anyString());
+        verify(jwtMock, times(1)).hasClaim(anyString());
         verify(jwtMock, times(1)).getClaim(anyString());
         verify(jwtMock, times(1)).getTokenValue();
         verify(userInfoMock, times(1)).getRoles();
@@ -103,7 +102,7 @@ public class JwtGrantedAuthoritiesConverterTest {
     void test_shouldReturnEmptyAuthoritiesWhenIdamReturnsUsers() {
         List<String> roles = new ArrayList<>();
         roles.add("crd-admin");
-        when(jwtMock.containsClaim(anyString())).thenReturn(true);
+        when(jwtMock.hasClaim(anyString())).thenReturn(true);
         when(jwtMock.getClaim(anyString())).thenReturn("access_token");
         when(jwtMock.getTokenValue()).thenReturn("access_token");
         when(userInfoMock.getRoles()).thenReturn(roles);
@@ -113,7 +112,7 @@ public class JwtGrantedAuthoritiesConverterTest {
 
         assertNotNull(authorities);
         assertEquals(1, authorities.size());
-        verify(jwtMock, times(1)).containsClaim(anyString());
+        verify(jwtMock, times(1)).hasClaim(anyString());
         verify(jwtMock, times(1)).getClaim(anyString());
         verify(jwtMock, times(1)).getTokenValue();
         verify(userInfoMock, times(1)).getRoles();
@@ -124,7 +123,7 @@ public class JwtGrantedAuthoritiesConverterTest {
     @Test
     void test_shouldReturnEmptyAuthoritiesWhenEmptyRoles() {
         List<String> roles = new ArrayList<>();
-        when(jwtMock.containsClaim(anyString())).thenReturn(true);
+        when(jwtMock.hasClaim(anyString())).thenReturn(true);
         when(jwtMock.getClaim(anyString())).thenReturn("access_token");
         when(jwtMock.getTokenValue()).thenReturn("access_token");
         when(userInfoMock.getRoles()).thenReturn(roles);
@@ -134,7 +133,7 @@ public class JwtGrantedAuthoritiesConverterTest {
 
         assertNotNull(authorities);
         assertEquals(0, authorities.size());
-        verify(jwtMock, times(1)).containsClaim(anyString());
+        verify(jwtMock, times(1)).hasClaim(anyString());
         verify(jwtMock, times(1)).getClaim(anyString());
         verify(jwtMock, times(1)).getTokenValue();
         verify(userInfoMock, times(1)).getRoles();

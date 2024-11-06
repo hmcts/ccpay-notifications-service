@@ -1,15 +1,5 @@
 package uk.gov.hmcts.reform.notifications.config;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.when;
-import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.MOCK;
-
-import java.util.Arrays;
-import java.util.Collections;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -30,6 +20,17 @@ import uk.gov.hmcts.reform.notifications.dtos.response.IdamUserIdResponse;
 import uk.gov.hmcts.reform.notifications.exceptions.GatewayTimeoutException;
 import uk.gov.hmcts.reform.notifications.exceptions.UserNotFoundException;
 
+import java.util.Arrays;
+import java.util.Collections;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.when;
+import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.MOCK;
+
 @ActiveProfiles({"local", "test"})
 @SpringBootTest(webEnvironment = MOCK)
 @SuppressWarnings("PMD")
@@ -42,7 +43,7 @@ public class IdamServiceImplTest {
     @Qualifier("restTemplateIdam")
     private RestTemplate restTemplateIdam;
 
-    private final String TOKEN = "Bearer 131313";
+    private static final String TOKEN = "Bearer 131313";
 
     @Test
     public void getResponseOnValidToken() {

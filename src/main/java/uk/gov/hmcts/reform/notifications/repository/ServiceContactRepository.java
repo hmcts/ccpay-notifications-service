@@ -1,9 +1,10 @@
 package uk.gov.hmcts.reform.notifications.repository;
 
-import java.util.Optional;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 import uk.gov.hmcts.reform.notifications.model.ServiceContact;
+
+import java.util.Optional;
 
 @Repository
 public interface ServiceContactRepository extends CrudRepository<ServiceContact, Integer> {

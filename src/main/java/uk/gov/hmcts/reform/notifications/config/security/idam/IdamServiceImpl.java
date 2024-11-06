@@ -17,8 +17,8 @@ import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 import uk.gov.hmcts.reform.notifications.dtos.response.IdamUserIdResponse;
-import uk.gov.hmcts.reform.notifications.exceptions.UserNotFoundException;
 import uk.gov.hmcts.reform.notifications.exceptions.GatewayTimeoutException;
+import uk.gov.hmcts.reform.notifications.exceptions.UserNotFoundException;
 
 import java.util.Collections;
 import java.util.List;

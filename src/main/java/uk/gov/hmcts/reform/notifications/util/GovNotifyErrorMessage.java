@@ -3,22 +3,22 @@ package uk.gov.hmcts.reform.notifications.util;
 public class GovNotifyErrorMessage {
 
     //Extracts the error message from the GovNotify Response body
-    public String getErrorMessage(String responseBody){
+    public String getErrorMessage(String responseBody) {
         String message = responseBody.replace('"', ' ');
-        String[] splits=message.split("message : ");
+        String[] splits = message.split("message : ");
         message = splits[1];
-        splits=message.split(" }");
+        splits = message.split(" }");
 
         message = splits[0];
         return message;
     }
 
     //Extracts the status from the GovNotify Response body
-    public String getStatusCode(String responseBody){
+    public String getStatusCode(String responseBody) {
         String message = responseBody.replace('"', ' ');
-        String[] splits=message.split("Status code: ");
+        String[] splits = message.split("Status code: ");
         message = splits[1];
-        splits=message.split(" ");
+        splits = message.split(" ");
 
         message = splits[0];
 

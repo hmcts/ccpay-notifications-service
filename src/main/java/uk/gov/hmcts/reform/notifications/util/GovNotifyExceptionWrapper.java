@@ -3,7 +3,14 @@ package uk.gov.hmcts.reform.notifications.util;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uk.gov.hmcts.reform.notifications.controllers.ExceptionHandlers;
-import uk.gov.hmcts.reform.notifications.exceptions.*;
+import uk.gov.hmcts.reform.notifications.exceptions.ExceededRequestLimitException;
+import uk.gov.hmcts.reform.notifications.exceptions.GovNotifyConnectionException;
+import uk.gov.hmcts.reform.notifications.exceptions.GovNotifyException;
+import uk.gov.hmcts.reform.notifications.exceptions.GovNotifyUnmappedException;
+import uk.gov.hmcts.reform.notifications.exceptions.InvalidAddressException;
+import uk.gov.hmcts.reform.notifications.exceptions.InvalidApiKeyException;
+import uk.gov.hmcts.reform.notifications.exceptions.InvalidTemplateId;
+import uk.gov.hmcts.reform.notifications.exceptions.RestrictedApiKeyException;
 import uk.gov.service.notify.NotificationClientException;
 
 public class GovNotifyExceptionWrapper {
@@ -21,13 +28,12 @@ public class GovNotifyExceptionWrapper {
     static final String SYSTEM_CLOCK_ERROR = "Error: Your system clock must be accurate to within 30 seconds";
     static final String INVALID_TOKEN = "Invalid token: API key not found";
 
-    public GovNotifyException mapGovNotifyEmailException(NotificationClientException exception){
+    public GovNotifyException mapGovNotifyEmailException(NotificationClientException exception) {
         int httpResult = exception.getHttpResult();
 
         try {
             httpResult = govNotifyErrorMessage.validateStatusCode(exception.getMessage(), exception.getHttpResult());
-        }
-        catch (Exception ex){
+        } catch (Exception ex) {
             LOG.error(ex.getMessage());
         }
 
@@ -37,7 +43,7 @@ public class GovNotifyExceptionWrapper {
 
                 if (INVALID_TEMPLATE_ID_RESPONSE.equals(errorMessage)) {
                     return new InvalidTemplateId("Invalid Template ID");
-                }else {
+                } else {
                     return new RestrictedApiKeyException("Internal Server Error, restricted API key");
                 }
             case 403:
@@ -51,13 +57,12 @@ public class GovNotifyExceptionWrapper {
         }
     }
 
-    public GovNotifyException mapGovNotifyLetterException(NotificationClientException exception){
+    public GovNotifyException mapGovNotifyLetterException(NotificationClientException exception) {
         int httpResult = exception.getHttpResult();
 
         try {
             httpResult = govNotifyErrorMessage.validateStatusCode(exception.getMessage(), exception.getHttpResult());
-        }
-        catch (Exception ex){
+        } catch (Exception ex) {
             LOG.error(ex.getMessage());
         }
 
@@ -65,12 +70,12 @@ public class GovNotifyExceptionWrapper {
             case 400:
                 String errorMessage = govNotifyErrorMessage.getErrorMessage(exception.getMessage());
 
-                if (INVALID_POSTCODE_RESPONSE_ONE.equals(errorMessage) ||
-                    INVALID_POSTCODE_RESPONSE_TWO.equals(errorMessage)){
+                if (INVALID_POSTCODE_RESPONSE_ONE.equals(errorMessage)
+                    || INVALID_POSTCODE_RESPONSE_TWO.equals(errorMessage)) {
                     return new InvalidAddressException("Please enter a valid/real postcode");
-                }else if (INVALID_TEMPLATE_ID_RESPONSE.equals(errorMessage)) {
+                } else if (INVALID_TEMPLATE_ID_RESPONSE.equals(errorMessage)) {
                     return new InvalidTemplateId("Invalid Template ID");
-                }else {
+                } else {
                     return new RestrictedApiKeyException("Internal Server Error, restricted API key");
                 }
             case 403:
@@ -84,6 +89,7 @@ public class GovNotifyExceptionWrapper {
         }
     }
 
+    @SuppressWarnings("fallthrough")
     public GovNotifyException mapGovNotifyPreviewException(NotificationClientException exception) {
         int httpResult = exception.getHttpResult();
 

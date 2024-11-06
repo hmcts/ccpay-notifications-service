@@ -15,15 +15,12 @@ public class EmailNotificationConfig {
     private String notificationApiKeyLetter;
 
     @Bean("Email")
-    public NotificationClientApi notificationEmailClient(){
+    public NotificationClientApi notificationEmailClient() {
         return new NotificationClient(notificationApiKeyEmail);
-
     }
 
     @Bean("Letter")
-    public NotificationClientApi notificationLetterClient(){
+    public NotificationClientApi notificationLetterClient() {
         return new NotificationClient(notificationApiKeyLetter);
-
     }
-
 }

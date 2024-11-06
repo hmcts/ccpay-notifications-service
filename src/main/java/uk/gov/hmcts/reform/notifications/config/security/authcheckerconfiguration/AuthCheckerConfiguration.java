@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.notifications.config.security.authcheckerconfiguration;
 
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.context.annotation.Bean;
@@ -16,7 +17,6 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import javax.servlet.http.HttpServletRequest;
 
 
 @Configuration
@@ -41,7 +41,7 @@ public class AuthCheckerConfiguration {
 
     @Bean
     public Function<HttpServletRequest, Optional<String>> userIdExtractor() {
-        return (request) -> {
+        return request -> {
             Pattern pattern = Pattern.compile("^/users/([^/]+)/.+$");
             Matcher matcher = pattern.matcher(request.getRequestURI());
             boolean matched = matcher.find();
