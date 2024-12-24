@@ -6,6 +6,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 import java.util.Map;
+import java.util.HashMap;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.StringUtils;
@@ -233,22 +234,26 @@ public class NotificationServiceImpl implements NotificationService {
                       "ccdCaseNumber", ccdCaseNumber,
                       "serviceMailbox", serviceMailBox,
                       "refundAmount", personalisation.getRefundAmount(),
-                      "reason", refundReason);
+                      "reason", refundReason,
+                      "customerReference", personalisation.getCustomerReference());
     }
 
     private Map<String, Object> createLetterPersonalisation(RecipientPostalAddress recipientPostalAddress, Personalisation personalisation, String serviceMailBox,
                                                             String refundRef, String ccdCaseNumber, String refundReason ) {
 
-        return Map.of("address_line_1", recipientPostalAddress.getAddressLine(),
-                      "address_line_2", recipientPostalAddress.getCity(),
-                      "address_line_3",recipientPostalAddress.getCounty(),
-                      "address_line_4",recipientPostalAddress.getCountry(),
-                      "address_line_5", recipientPostalAddress.getPostalCode(),
-                      "refundReference", refundRef,
-                      "ccdCaseNumber", ccdCaseNumber,
-                      "serviceMailbox", serviceMailBox,
-                      "refundAmount", personalisation.getRefundAmount(),
-                      "reason", refundReason);
+        Map<String, Object> personalisationMap = new HashMap<>();
+        personalisationMap.put("address_line_1", recipientPostalAddress.getAddressLine());
+        personalisationMap.put("address_line_2", recipientPostalAddress.getCity());
+        personalisationMap.put("address_line_3", recipientPostalAddress.getCounty());
+        personalisationMap.put("address_line_4", recipientPostalAddress.getCountry());
+        personalisationMap.put("address_line_5", recipientPostalAddress.getPostalCode());
+        personalisationMap.put("refundReference", refundRef);
+        personalisationMap.put("ccdCaseNumber", ccdCaseNumber);
+        personalisationMap.put("serviceMailbox", serviceMailBox);
+        personalisationMap.put("refundAmount", personalisation.getRefundAmount());
+        personalisationMap.put("reason", refundReason);
+        personalisationMap.put("customerReference", personalisation.getCustomerReference());
+        return personalisationMap;
     }
 
     @Override

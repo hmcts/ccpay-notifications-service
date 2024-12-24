@@ -31,4 +31,6 @@ public class Personalisation {
     @NotNull(message = "Refund reason cannot be null")
     @NotEmpty(message = "Refund reason cannot be blank")
     private String refundReason;
+
+    private String customerReference;
 }

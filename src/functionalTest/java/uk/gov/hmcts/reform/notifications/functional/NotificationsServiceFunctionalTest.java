@@ -121,7 +121,7 @@ public class NotificationsServiceFunctionalTest {
             .notificationType(NotificationType.EMAIL)
             .serviceName("Probate")
             .personalisation(Personalisation.personalisationRequestWith().ccdCaseNumber(CCD_CASE_NUMBER).refundReference("RF-1234-1234-1234-1234").refundAmount(
-                BigDecimal.valueOf(10)).refundReason("RR001").build())
+                BigDecimal.valueOf(10)).refundReason("RR001").customerReference("SM365623/T8028839").build())
             .build();
 
         final Response responseNotificationEmail = notificationsTestService.postEmailNotification(
@@ -151,6 +151,7 @@ public class NotificationsServiceFunctionalTest {
                                  .refundReference(reference)
                                  .refundAmount(BigDecimal.valueOf(10))
                                  .refundReason("Unable to apply refund to Card")
+                                 .customerReference("SM365623/T8028839")
                                  .build())
             .build();
 
@@ -181,7 +182,7 @@ public class NotificationsServiceFunctionalTest {
             .notificationType(NotificationType.LETTER)
             .serviceName("Probate")
             .personalisation(Personalisation.personalisationRequestWith().ccdCaseNumber(CCD_CASE_NUMBER).refundReference("RF-1234-1234-1234-1234").refundAmount(
-                BigDecimal.valueOf(10)).refundReason("RR001").build())
+                BigDecimal.valueOf(10)).refundReason("RR001").customerReference("SM365623/T8028839").build())
 
             .build();
 
@@ -206,7 +207,7 @@ public class NotificationsServiceFunctionalTest {
             .emailReplyToId(emailReplyToId)
             .notificationType(NotificationType.EMAIL)
             .personalisation(Personalisation.personalisationRequestWith().ccdCaseNumber(CCD_CASE_NUMBER).refundReference("RF-1234-1234-1234-1234").refundAmount(
-                BigDecimal.valueOf(10)).refundReason("RR001").build())
+                BigDecimal.valueOf(10)).refundReason("RR001").customerReference("SM365623/T8028839").build())
 
             .build();
 
@@ -262,7 +263,7 @@ public class NotificationsServiceFunctionalTest {
             .notificationType(NotificationType.EMAIL)
             .serviceName("Probate")
             .personalisation(Personalisation.personalisationRequestWith().ccdCaseNumber(CCD_CASE_NUMBER).refundReference(reference).refundAmount(
-                BigDecimal.valueOf(10)).refundReason("RR001").build())
+                BigDecimal.valueOf(10)).refundReason("RR001").customerReference("SM365623/T8028839").build())
 
             .build();
 
@@ -310,7 +311,8 @@ public class NotificationsServiceFunctionalTest {
             .serviceName("Probate")
             .personalisation(
                 Personalisation.personalisationRequestWith().ccdCaseNumber(CCD_CASE_NUMBER).refundAmount(
-                    BigDecimal.valueOf(10)).refundReason("RR001").refundReference("RF-1234-1234-1234-1234").build())
+                    BigDecimal.valueOf(10)).refundReason("RR001").refundReference("RF-1234-1234-1234-1234")
+                    .customerReference("SM365623/T8028839").build())
             .paymentChannel("telephony")
             .paymentMethod("card")
             .recipientPostalAddress(RecipientPostalAddress.recipientPostalAddressWith().addressLine("abc").postalCode("123 456")
@@ -338,7 +340,8 @@ public class NotificationsServiceFunctionalTest {
             .serviceName("Probate")
             .personalisation(
                 Personalisation.personalisationRequestWith().ccdCaseNumber(CCD_CASE_NUMBER).refundAmount(
-                    BigDecimal.valueOf(10)).refundReason("RR001").refundReference("RF-1234-1234-1234-1234").build())
+                    BigDecimal.valueOf(10)).refundReason("RR001").refundReference("RF-1234-1234-1234-1234")
+                    .customerReference("SM365623/T8028839").build())
             .paymentChannel("bull scan")
             .paymentMethod("cash")
             .recipientPostalAddress(RecipientPostalAddress.recipientPostalAddressWith().addressLine("abc").postalCode("123 456")
@@ -366,7 +369,8 @@ public class NotificationsServiceFunctionalTest {
             .serviceName("Probate")
             .personalisation(
                 Personalisation.personalisationRequestWith().ccdCaseNumber(CCD_CASE_NUMBER).refundAmount(
-                    BigDecimal.valueOf(10)).refundReason("RR001").refundReference("RF-1234-1234-1234-1234").build())
+                    BigDecimal.valueOf(10)).refundReason("RR001").refundReference("RF-1234-1234-1234-1234")
+                    .customerReference("SM365623/T8028839").build())
             .paymentChannel("online")
             .paymentMethod("card")
             .build();
@@ -392,7 +396,8 @@ public class NotificationsServiceFunctionalTest {
             .serviceName("Probate")
             .personalisation(
                 Personalisation.personalisationRequestWith().ccdCaseNumber(CCD_CASE_NUMBER).refundAmount(
-                    BigDecimal.valueOf(10)).refundReason("RR001").refundReference("RF-1234-1234-1234-1234").build())
+                    BigDecimal.valueOf(10)).refundReason("RR001").refundReference("RF-1234-1234-1234-1234")
+                    .customerReference("SM365623/T8028839").build())
             .paymentChannel("bulk scan")
             .paymentMethod("cash")
             .build();
@@ -514,6 +519,7 @@ public class NotificationsServiceFunctionalTest {
                                  .refundReference(reference)
                                  .refundAmount(BigDecimal.valueOf(10))
                                  .refundReason("RR001")
+                                 .customerReference("SM365623/T8028839")
                                  .build())
             .build();
 
@@ -560,6 +566,7 @@ public class NotificationsServiceFunctionalTest {
                                  .refundReference(reference)
                                  .refundAmount(BigDecimal.valueOf(10))
                                  .refundReason("RR001")
+                                 .customerReference("SM365623/T8028839")
                                  .build())
             .build();
 
@@ -606,7 +613,7 @@ public class NotificationsServiceFunctionalTest {
             .notificationType(NotificationType.LETTER)
             .serviceName("Probate")
             .personalisation(Personalisation.personalisationRequestWith().ccdCaseNumber(CCD_CASE_NUMBER).refundReference(reference).refundAmount(
-                BigDecimal.valueOf(10)).refundReason("RR001").build())
+                BigDecimal.valueOf(10)).refundReason("RR001").customerReference("SM365623/T8028839").build())
 
             .build();
 
@@ -651,7 +658,7 @@ public class NotificationsServiceFunctionalTest {
             .notificationType(NotificationType.LETTER)
             .serviceName("Probate")
             .personalisation(Personalisation.personalisationRequestWith().ccdCaseNumber(CCD_CASE_NUMBER).refundReference(reference).refundAmount(
-                BigDecimal.valueOf(10)).refundReason("RR001").build())
+                BigDecimal.valueOf(10)).refundReason("RR001").customerReference("SM365623/T8028839").build())
 
             .build();
 
@@ -692,7 +699,7 @@ public class NotificationsServiceFunctionalTest {
             .notificationType(NotificationType.EMAIL)
             .serviceName("Probate")
             .personalisation(Personalisation.personalisationRequestWith().ccdCaseNumber(CCD_CASE_NUMBER).refundReference(reference).refundAmount(
-                BigDecimal.valueOf(10)).refundReason("RR001").build())
+                BigDecimal.valueOf(10)).refundReason("RR001").customerReference("SM365623/T8028839").build())
             .build();
 
         final Response responseNotificationEmail = notificationsTestService.postEmailNotification(
@@ -734,7 +741,7 @@ public class NotificationsServiceFunctionalTest {
             .notificationType(NotificationType.EMAIL)
             .serviceName("Wrong Service")
             .personalisation(Personalisation.personalisationRequestWith().ccdCaseNumber(CCD_CASE_NUMBER).refundReference(reference).refundAmount(
-                BigDecimal.valueOf(10)).refundReason("RR001").build())
+                BigDecimal.valueOf(10)).refundReason("RR001").customerReference("SM365623/T8028839").build())
             .build();
 
         final Response responseNotificationEmail = notificationsTestService.postEmailNotification(
@@ -763,7 +770,7 @@ public class NotificationsServiceFunctionalTest {
             .notificationType(NotificationType.LETTER)
             .serviceName("Probate")
             .personalisation(Personalisation.personalisationRequestWith().ccdCaseNumber(CCD_CASE_NUMBER).refundReference(reference).refundAmount(
-                BigDecimal.valueOf(10)).refundReason("RR001").build())
+                BigDecimal.valueOf(10)).refundReason("RR001").customerReference("SM365623/T8028839").build())
 
             .build();
 
@@ -801,7 +808,8 @@ public class NotificationsServiceFunctionalTest {
             .serviceName("Probate")
             .personalisation(
                 Personalisation.personalisationRequestWith().ccdCaseNumber(CCD_CASE_NUMBER).refundAmount(
-                    BigDecimal.valueOf(10)).refundReason("RR001").refundReference("RF-1234-1234-1234-1234").build())
+                    BigDecimal.valueOf(10)).refundReason("RR001").refundReference("RF-1234-1234-1234-1234")
+                    .customerReference("SM365623/T8028839").build())
             .paymentChannel("online")
             .paymentMethod("card")
             .build();
@@ -827,7 +835,8 @@ public class NotificationsServiceFunctionalTest {
             .serviceName("Probate")
             .personalisation(
                 Personalisation.personalisationRequestWith().ccdCaseNumber(CCD_CASE_NUMBER).refundAmount(
-                    BigDecimal.valueOf(10)).refundReason("RR003").refundReference("RF-1234-1234-1234-1234").build())
+                    BigDecimal.valueOf(10)).refundReason("RR003").refundReference("RF-1234-1234-1234-1234")
+                    .customerReference("SM365623/T8028839").build())
             .paymentChannel("telephony")
             .paymentMethod("card")
             .recipientPostalAddress(RecipientPostalAddress.recipientPostalAddressWith().addressLine("abc").postalCode("123 456")
@@ -864,7 +873,7 @@ public class NotificationsServiceFunctionalTest {
             .serviceName("Probate")
             .personalisation(Personalisation.personalisationRequestWith().ccdCaseNumber(CCD_CASE_NUMBER)
                                  .refundReference(reference).refundAmount(
-                    BigDecimal.valueOf(10)).refundReason("RR007").build())
+                    BigDecimal.valueOf(10)).refundReason("RR007").customerReference("SM365623/T8028839").build())
 
             .build();
 
@@ -911,6 +920,7 @@ public class NotificationsServiceFunctionalTest {
                                  .refundReference(reference)
                                  .refundAmount(BigDecimal.valueOf(10))
                                  .refundReason("RR009")
+                                 .customerReference("SM365623/T8028839")
                                  .build())
             .build();
 
@@ -980,7 +990,7 @@ public class NotificationsServiceFunctionalTest {
             .notificationType(NotificationType.LETTER)
             .serviceName("Wrong Service")
             .personalisation(Personalisation.personalisationRequestWith().ccdCaseNumber(CCD_CASE_NUMBER).refundReference("RF-1234-1234-1234-1234").refundAmount(
-                BigDecimal.valueOf(10)).refundReason("RR001").build())
+                BigDecimal.valueOf(10)).refundReason("RR001").customerReference("SM365623/T8028839").build())
 
             .build();
 
