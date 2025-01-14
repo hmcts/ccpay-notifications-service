@@ -211,7 +211,7 @@ def versions = [
   jackson         : '2.18.2',
   restAssured     : '4.5.1',
   serenity        : '4.2.11',
-  serenityCucumber: '4.2.11',
+  serenityCucumber: '4.2.12',
   pitest          : '1.9.0',
   sonarPitest     : '0.5'
 ]
