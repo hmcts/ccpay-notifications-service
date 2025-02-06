@@ -235,7 +235,7 @@ public class NotificationServiceImpl implements NotificationService {
                       "serviceMailbox", serviceMailBox,
                       "refundAmount", personalisation.getRefundAmount(),
                       "reason", refundReason,
-                      "customerReference", personalisation.getCustomerReference());
+                      "customerReference", Optional.ofNullable(personalisation.getCustomerReference()).orElse(""));
     }
 
     private Map<String, Object> createLetterPersonalisation(RecipientPostalAddress recipientPostalAddress, Personalisation personalisation, String serviceMailBox,
