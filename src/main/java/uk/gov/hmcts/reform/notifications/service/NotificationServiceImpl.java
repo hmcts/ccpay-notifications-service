@@ -264,7 +264,7 @@ public class NotificationServiceImpl implements NotificationService {
         personalisationMap.put("serviceMailbox", serviceMailBox);
         personalisationMap.put("refundAmount", personalisation.getRefundAmount());
         personalisationMap.put("reason", refundReason);
-        personalisationMap.put("customerReference", personalisation.getCustomerReference());
+        personalisationMap.put("customerReference", Optional.ofNullable(personalisation.getCustomerReference()).orElse(""));
         return personalisationMap;
     }
 
