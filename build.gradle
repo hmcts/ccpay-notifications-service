@@ -269,7 +269,7 @@ dependencies {
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-web'
   implementation group: 'org.springframework.boot', name:'spring-boot-starter-oauth2-client'
   implementation (group: 'uk.gov.service.notify', name: 'notifications-java-client', version: '5.2.1-RELEASE') {
-    exclude group: 'org.json:', module: 'json'
+    exclude group: 'org.json', module: 'json'
   }
 
   annotationProcessor group: 'org.projectlombok', name: 'lombok', version: versions.lombok
@@ -279,6 +279,10 @@ dependencies {
   testImplementation group: 'org.springframework.boot', name: 'spring-boot-starter-test', {
     exclude group: 'junit', module: 'junit'
     exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
+  }
+
+  implementation (group: 'com.vaadin.external.google', name: 'android-json', version: '0.0.20131108.vaadin1') {
+    exclude group: 'org.json', module: 'json'
   }
 
   testImplementation group :'org.projectlombok', name:'lombok', version: versions.lombok
