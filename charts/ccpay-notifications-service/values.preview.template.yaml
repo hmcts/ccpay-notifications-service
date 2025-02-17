@@ -46,21 +46,21 @@ java:
         - name: refunds-api-client-secret
           alias: REFUND_SERVICE_ACCOUNT_CLIENT_SECRET
         - name: notifications-letter-template-id
-          alias: "156f4840-22cb-4297-8699-db3758e407bf"
+          alias: NOTIFICATION_LETTER_TEMPLATE_ID
         - name: notifications-email-template-id
-          alias: "171d1383-fb72-41f2-8f54-a077258d2e39"
+          alias: NOTIFICATION_EMAIL_TEMPLATE_ID
         - name: notifications-letter-cheque-po-cash-template-id
-          alias: "156f4840-22cb-4297-8699-db3758e407bf"
+          alias: NOTIFICATIONS_LETTER_CHEQUE_PO_CASH_TEMPLATE_ID
         - name: notifications-email-cheque-po-cash-template-id
-          alias: "171d1383-fb72-41f2-8f54-a077258d2e39"
+          alias: NOTIFICATIONS_EMAIL_CHEQUE_PO_CASH_TEMPLATE_ID
         - name: notifications-letter-card-pba-template-id
-          alias: "c0efdc71-5485-4d4c-b02d-9307e7b4bafa"
+          alias: NOTIFICATION_LETTER_CARD_PBA_TEMPLATE_ID
         - name: notifications-email-card-pba-template-id
-          alias: "10b9a460-9bca-45bf-ae2f-4eeabf26a095"
+          alias: NOTIFICATION_EMAIL_CARD_PBA_TEMPLATE_ID
         - name: notifications-letter-refund-when-contacted-template-id
-          alias: "584885a6-188c-4b7e-a93f-3ca98b4130f6"
+          alias: NOTIFICATION_LETTER_REFUND_WHEN_CONTACTED_TEMPLATE_ID
         - name: notifications-email-refund-when-contacted-template-id
-          alias: "57e47a81-8e41-4347-92b8-4eaefddf2089"
+          alias: NOTIFICATION_EMAIL_REFUND_WHEN_CONTACTED_TEMPLATE_ID9"
         - name: postcode-address-lookup-id
           alias: POSTCODE_ADDRESS_LOOKUP_ID
         - name: app-insights-connection-string
