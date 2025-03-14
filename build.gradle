@@ -203,7 +203,7 @@ repositories {
 }
 
 def versions = [
-  appinsights     : '3.6.2',
+  appinsights     : '3.7.1',
   log4j           : '2.24.3',
   lombok          : '1.18.36',
   reformLogging   : '6.1.8',
