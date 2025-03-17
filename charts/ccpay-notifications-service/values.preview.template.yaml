@@ -25,6 +25,8 @@ java:
     REFUND_SERVICE_ACCOUNT_SCOPE: "openid profile roles search-user"
     REFUND_SERVICE_ACCOUNT_REDIRECT_URI: "http://ccpay-refunds-api-aat.service.core-compute-aat.internal/oauth2/callback"
     PAYMENT_API_URL: "http://payment-api-pr-1301-java"
+    NOTIFICATION_LETTER_CARD_PBA_TEMPLATE_ID: "c0efdc71-5485-4d4c-b02d-9307e7b4bafa"
+    NOTIFICATION_EMAIL_CARD_PBA_TEMPLATE_ID: "10b9a460-9bca-45bf-ae2f-4eeabf26a095"
   keyVaults:
     "ccpay":
       resourceGroup: ccpay
