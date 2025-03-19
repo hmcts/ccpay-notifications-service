@@ -113,8 +113,8 @@ notify:
       letter: ${NOTIFICATIONS_LETTER_CHEQUE_PO_CASH_TEMPLATE_ID:}
       email: ${NOTIFICATIONS_EMAIL_CHEQUE_PO_CASH_TEMPLATE_ID:}
     card-pba:
-      letter: ${NOTIFICATION_LETTER_CARD_PBA_TEMPLATE_ID:}
-      email: ${NOTIFICATION_EMAIL_CARD_PBA_TEMPLATE_ID:}
+      letter: ${NOTIFICATION_LETTER_CARD_PBA_TEMPLATE_ID:c0efdc71-5485-4d4c-b02d-9307e7b4bafa}
+      email: ${NOTIFICATION_EMAIL_CARD_PBA_TEMPLATE_ID:10b9a460-9bca-45bf-ae2f-4eeabf26a095}
     from-details:
       email: HM Courts and Tribunals Registrations <hm.courts.and.tribunals.registrations@notifications.service.gov.uk>
       mail:
