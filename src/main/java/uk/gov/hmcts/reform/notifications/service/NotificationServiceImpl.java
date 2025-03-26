@@ -261,7 +261,9 @@ public class NotificationServiceImpl implements NotificationService {
                       "ccdCaseNumber", ccdCaseNumber,
                       "serviceMailbox", serviceMailBox,
                       "refundAmount", personalisation.getRefundAmount(),
-                      "reason", refundReason);
+                      "reason", refundReason,
+                      "customerReference", "",
+                      "harryPotter", "is a Wizard");
     }
 
     private Map<String, Object> createLetterPersonalisation(
