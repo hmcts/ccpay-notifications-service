@@ -25,9 +25,9 @@ def secrets = [
     secret('paybubble-s2s-secret', 'S2S_SERVICE_SECRET_PAYBUBBLE'),
     secret('freg-idam-generated-user-email-pattern', 'GENERATED_USER_EMAIL_PATTERN'),
     secret('freg-idam-test-user-password', 'TEST_USER_PASSWORD'),
-    secret('notifications-letter-template-id', 'NOTIFICATION_LETTER_TEMPLATE_ID'),
-//    secret('notifications-email-template-id', 'NOTIFICATION_EMAIL_TEMPLATE_ID'),
     secret('paybubble-idam-client-secret','IDAM_PAYBUBBLE_CLIENT_SECRET'),
+//    secret('notifications-letter-template-id', 'NOTIFICATION_LETTER_TEMPLATE_ID'),
+//    secret('notifications-email-template-id', 'NOTIFICATION_EMAIL_TEMPLATE_ID'),
 //    secret('notifications-letter-card-pba-template-id','NOTIFICATION_LETTER_CARD_PBA_TEMPLATE_ID'),
 //    secret('notifications-email-card-pba-template-id','NOTIFICATION_EMAIL_CARD_PBA_TEMPLATE_ID'),
 //    secret('notifications-letter-cheque-po-cash-template-id','NOTIFICATIONS_LETTER_CHEQUE_PO_CASH_TEMPLATE_ID'),
@@ -57,6 +57,7 @@ withNightlyPipeline(type, product, component) {
   enableFullFunctionalTest()
 
   onPR {
+    env.NOTIFICATION_LETTER_TEMPLATE_ID = "156f4840-22cb-4297-8699-db3758e407bf"
     env.NOTIFICATION_EMAIL_TEMPLATE_ID = "171d1383-fb72-41f2-8f54-a077258d2e39"
     env.NOTIFICATION_LETTER_CARD_PBA_TEMPLATE_ID = "c0efdc71-5485-4d4c-b02d-9307e7b4bafa"
     env.NOTIFICATION_EMAIL_CARD_PBA_TEMPLATE_ID = "10b9a460-9bca-45bf-ae2f-4eeabf26a095"
