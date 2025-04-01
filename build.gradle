@@ -205,7 +205,7 @@ repositories {
 def versions = [
   appinsights     : '3.7.1',
   log4j           : '2.24.3',
-  lombok          : '1.18.36',
+  lombok          : '1.18.38',
   reformLogging   : '6.1.8',
   springBoot      : springBoot.class.package.implementationVersion,
   jackson         : '2.18.3',
