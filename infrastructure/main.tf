@@ -57,7 +57,7 @@ module "notifications-service-database-v15" {
   pgsql_version = var.postgresql_flexible_sql_version
   action_group_name           = join("-", [var.db_monitor_action_group_name, local.db_server_name, var.env])
   email_address_key           = var.db_alert_email_address_key
-  email_address_key_vault_id  = data.azurerm_key_vault.fees_key_vault.id
+  email_address_key_vault_id  = data.azurerm_key_vault.notifications_key_vault.id
 }
 
 
