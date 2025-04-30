@@ -277,7 +277,7 @@ dependencies {
 
   testImplementation group :'org.projectlombok', name:'lombok', version: versions.lombok
   testAnnotationProcessor group :'org.projectlombok', name:'lombok', version: versions.lombok
-  testImplementation group: 'org.testcontainers', name: 'postgresql', version: '1.20.6'
+  testImplementation group: 'org.testcontainers', name: 'postgresql', version: '1.21.0'
 
   integrationTestImplementation sourceSets.main.runtimeClasspath
   integrationTestImplementation sourceSets.test.runtimeClasspath
