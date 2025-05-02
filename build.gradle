@@ -208,7 +208,7 @@ def versions = [
   lombok          : '1.18.38',
   reformLogging   : '6.1.8',
   springBoot      : springBoot.class.package.implementationVersion,
-  jackson         : '2.18.3',
+  jackson         : '2.19.0',
   restAssured     : '4.5.1',
   serenity        : '4.2.22',
   serenityCucumber: '4.2.22',
