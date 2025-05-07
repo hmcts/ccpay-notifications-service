@@ -206,7 +206,7 @@ def versions = [
   appinsights     : '3.7.2',
   log4j           : '2.24.3',
   lombok          : '1.18.38',
-  reformLogging   : '6.1.8',
+  reformLogging   : '6.1.9',
   springBoot      : springBoot.class.package.implementationVersion,
   jackson         : '2.19.0',
   restAssured     : '4.5.1',
