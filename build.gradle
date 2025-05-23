@@ -284,7 +284,7 @@ dependencies {
   integrationTestImplementation sourceSets.main.runtimeClasspath
   integrationTestImplementation sourceSets.test.runtimeClasspath
 
-  smokeTestImplementation group: 'io.rest-assured', name: 'rest-assured', version: '5.5.2'
+  smokeTestImplementation group: 'io.rest-assured', name: 'rest-assured', version: '5.5.5'
   smokeTestImplementation sourceSets.main.runtimeClasspath
   smokeTestImplementation sourceSets.test.runtimeClasspath
   smokeTestImplementation group :'org.projectlombok', name:'lombok', version: versions.lombok
