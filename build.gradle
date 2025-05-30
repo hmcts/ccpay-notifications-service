@@ -205,7 +205,7 @@ repositories {
 }
 
 def versions = [
-  appinsights     : '3.7.2',
+  appinsights     : '3.7.3',
   log4j           : '2.24.3',
   lombok          : '1.18.38',
   reformLogging   : '6.1.9',
