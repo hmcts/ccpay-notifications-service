@@ -15,5 +15,6 @@
   "90033_Loosely Scoped Cookie_http://ccpay-notifications-service-aat.service.core-compute-aat.internal/_GET":"ignore",
   "90033_Loosely Scoped Cookie_http://ccpay-notifications-service-aat.service.core-compute-aat.internal/robots.txt_GET":"ignore",
   "10049_Non-Storable Content_http://ccpay-notifications-service-aat.service.core-compute-aat.internal/v2/api-docs_GET": "ignore",
-  "10112_Session Management Response Identified_http://ccpay-notifications-service-aat.service.core-compute-aat.internal/v2/api-docs_GET":"ignore"
+  "10112_Session Management Response Identified_http://ccpay-notifications-service-aat.service.core-compute-aat.internal/v2/api-docs_GET":"ignore",
+  "10116_ZAP is Out of Date_http://ccpay-notifications-service-aat.service.core-compute-aat.internal/v2/api-docs_GET":"ignore"
 }
