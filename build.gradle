@@ -205,7 +205,6 @@ repositories {
 }
 
 def versions = [
-  appinsights     : '3.7.4',
   log4j           : '2.25.1',
   lombok          : '1.18.40',
   reformLogging   : '6.1.9',
@@ -244,8 +243,6 @@ dependencies {
   implementation group: 'com.github.hmcts', name: 'service-auth-provider-java-client', version: '5.3.3'
   implementation group: 'com.github.spotbugs', name: 'spotbugs-annotations', version: '4.9.4'
   implementation group: 'com.google.guava', name: 'guava', version: '33.4.8-jre'
-  implementation group: 'com.microsoft.azure', name: 'applicationinsights-core', version: versions.appinsights
-  implementation group: 'com.microsoft.azure', name: 'applicationinsights-web', version: versions.appinsights
   implementation group: 'com.nimbusds', name: 'nimbus-jose-jwt', version: '10.5'
   implementation group: 'io.hypersistence', name: 'hypersistence-utils-hibernate-63', version: '3.11.0'
   implementation group: 'jakarta.inject', name: 'jakarta.inject-api', version: '2.0.1'
