@@ -60,12 +60,6 @@ public class NotificationsServiceFunctionalTest {
     @Value("${notify.email.template}")
     private String emailTemplateId;
 
-    @Value("${notify.template.cheque-po-cash.letter}")
-    private String chequePoCashLetterTemplateId;
-
-    @Value("${notify.template.cheque-po-cash.email}")
-    private String chequePoCashEmailTemplateId;
-
     @Value("${notify.template.card-pba.letter}")
     private String cardPbaLetterTemplateId;
 
