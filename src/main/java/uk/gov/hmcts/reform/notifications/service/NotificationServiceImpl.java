@@ -315,7 +315,7 @@ public class NotificationServiceImpl implements NotificationService {
         String refundReason = getRefundReason(docPreviewRequest.getPersonalisation().getRefundReason());
         LOG.info("Refund reason in previewNotification {}", refundReason);
         String ccdCaseNumber;
-        instructionType = getInstructionType(docPreviewRequest.getPaymentMethod());
+        instructionType = SEND_REFUND;
 
         Optional<ServiceContact> serviceContactOptional = serviceContactRepository.findByServiceName(docPreviewRequest.getServiceName());
         ServiceContact serviceContact = new ServiceContact();
@@ -419,13 +419,6 @@ public class NotificationServiceImpl implements NotificationService {
             .html(html)
             .from(notificationTemplateResponseMapper.toFromMapper(notificationType, serviceContact))
             .build();
-    }
-
-    private String getInstructionType(String paymentMethod) {
-
-        String instructionType = SEND_REFUND;
-
-        return instructionType;
     }
 
     private String getRefundReason(String refundReasonCode) {
