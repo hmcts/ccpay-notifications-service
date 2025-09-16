@@ -432,7 +432,7 @@ public class NotificationServiceImpl implements NotificationService {
         String instructionType;
         if (BULK_SCAN.equals(paymentChannel) && (CASH.equals(paymentMethod)
             || POSTAL_ORDER.equals(paymentMethod))) {
-            instructionType = REFUND_WHEN_CONTACTED;
+            instructionType = SEND_REFUND;
         } else {
             instructionType = SEND_REFUND;
         }
