@@ -101,10 +101,6 @@ public class NotificationServiceImpl implements NotificationService {
 
     private static final Logger LOG = LoggerFactory.getLogger(NotificationServiceImpl.class);
 
-    private static final String POSTAL_ORDER = "postal order";
-
-    private static final String BULK_SCAN = "bulk scan";
-
     private static final String REFUND_WHEN_CONTACTED = "RefundWhenContacted";
 
     private static final String SEND_REFUND = "SendRefund";
@@ -112,8 +108,6 @@ public class NotificationServiceImpl implements NotificationService {
     private static final String EMAIL = "EMAIL";
 
     private static final String LETTER = "LETTER";
-
-    private static final String CASH = "cash";
 
     private static final String STRING = "string";
 
@@ -321,7 +315,7 @@ public class NotificationServiceImpl implements NotificationService {
         String refundReason = getRefundReason(docPreviewRequest.getPersonalisation().getRefundReason());
         LOG.info("Refund reason in previewNotification {}", refundReason);
         String ccdCaseNumber;
-        instructionType = getInstructionType(docPreviewRequest.getPaymentChannel(),docPreviewRequest.getPaymentMethod());
+        instructionType = getInstructionType(docPreviewRequest.getPaymentMethod());
 
         Optional<ServiceContact> serviceContactOptional = serviceContactRepository.findByServiceName(docPreviewRequest.getServiceName());
         ServiceContact serviceContact = new ServiceContact();
@@ -427,7 +421,7 @@ public class NotificationServiceImpl implements NotificationService {
             .build();
     }
 
-    private String getInstructionType(String paymentChannel, String paymentMethod) {
+    private String getInstructionType(String paymentMethod) {
 
         String instructionType = SEND_REFUND;
 
