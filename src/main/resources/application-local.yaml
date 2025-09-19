@@ -49,9 +49,6 @@ auth:
     client:
       baseUrl: http://localhost:8082
 
-azure:
-  application-insights:
-    instrumentation-key: ${APPINSIGHTS_INSTRUMENTATIONKEY:}
 idam:
   api:
     url: ${IDAM_API_URL:http://localhost:5000}
