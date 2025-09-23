@@ -60,12 +60,6 @@ public class NotificationsServiceFunctionalTest {
     @Value("${notify.email.template}")
     private String emailTemplateId;
 
-    @Value("${notify.template.cheque-po-cash.letter}")
-    private String chequePoCashLetterTemplateId;
-
-    @Value("${notify.template.cheque-po-cash.email}")
-    private String chequePoCashEmailTemplateId;
-
     @Value("${notify.template.card-pba.letter}")
     private String cardPbaLetterTemplateId;
 
@@ -357,7 +351,7 @@ public class NotificationsServiceFunctionalTest {
 
         NotificationTemplatePreviewResponse notificationTemplatePreviewResponse = responseNotificationLetter.getBody().as(NotificationTemplatePreviewResponse.class);
         assertThat(notificationTemplatePreviewResponse.getTemplateType().equals("letter"));
-        assertThat(notificationTemplatePreviewResponse.getTemplateId().equals(chequePoCashLetterTemplateId));
+        assertThat(notificationTemplatePreviewResponse.getTemplateId().equals(cardPbaLetterTemplateId));
     }
 
     @Test
@@ -411,7 +405,7 @@ public class NotificationsServiceFunctionalTest {
 
         NotificationTemplatePreviewResponse notificationTemplatePreviewResponse = responseNotificationLetter.getBody().as(NotificationTemplatePreviewResponse.class);
         assertThat(notificationTemplatePreviewResponse.getTemplateType().equals("email"));
-        assertThat(notificationTemplatePreviewResponse.getTemplateId().equals(chequePoCashEmailTemplateId));
+        assertThat(notificationTemplatePreviewResponse.getTemplateId().equals(cardPbaEmailTemplateId));
     }
 
     @Test
@@ -508,7 +502,7 @@ public class NotificationsServiceFunctionalTest {
 
         String reference = "RF-1234-" + RandomUtils.nextInt();
         RefundNotificationEmailRequest refundNotificationEmailRequest = RefundNotificationEmailRequest.refundNotificationEmailRequestWith()
-            .templateId(chequePoCashEmailTemplateId)
+            .templateId(cardPbaEmailTemplateId)
             .reference(reference)
             .notificationType(NotificationType.EMAIL)
             .emailReplyToId(emailReplyToId)
@@ -545,7 +539,7 @@ public class NotificationsServiceFunctionalTest {
         Map contactDetails = (Map) notificationList.get(0).get("contact_details");
         assertThat(contactDetails.get("email")).isEqualTo("vat12@mailinator.com");
         Map sendNotification = (Map) notificationList.get(0).get("sent_notification");
-        assertThat(sendNotification.get("template_id")).isEqualTo(chequePoCashEmailTemplateId);
+        assertThat(sendNotification.get("template_id")).isEqualTo(cardPbaEmailTemplateId);
 
         deleteNotifications(reference);
     }
@@ -646,7 +640,7 @@ public class NotificationsServiceFunctionalTest {
     public void sendLetterNotificationRequestRefundWhenContacted() {
         String reference = "RF-1234-" + RandomUtils.nextInt();
         RefundNotificationLetterRequest refundNotificationLetterRequest = RefundNotificationLetterRequest.refundNotificationLetterRequestWith()
-            .templateId(chequePoCashLetterTemplateId)
+            .templateId(cardPbaLetterTemplateId)
             .recipientPostalAddress(RecipientPostalAddress.recipientPostalAddressWith()
                                         .addressLine("102 Petty France")
                                         .city(CITY)
@@ -682,7 +676,7 @@ public class NotificationsServiceFunctionalTest {
         List<Map> notificationList =  responseNotification.getBody().jsonPath().getList("notifications");
         assertThat(notificationList.size()).isGreaterThanOrEqualTo(1);
         Map sendNotification = (Map) notificationList.get(0).get("sent_notification");
-        assertThat(sendNotification.get("template_id")).isEqualTo(chequePoCashLetterTemplateId);
+        assertThat(sendNotification.get("template_id")).isEqualTo(cardPbaLetterTemplateId);
 
         deleteNotifications(reference);
     }
@@ -860,7 +854,7 @@ public class NotificationsServiceFunctionalTest {
     public void sendLetterNotificationRequestRefundWhenContactedWhenReasonIsCourtDiscretion() {
         String reference = "RF-1234-" + RandomUtils.nextInt();
         RefundNotificationLetterRequest refundNotificationLetterRequest = RefundNotificationLetterRequest.refundNotificationLetterRequestWith()
-            .templateId(chequePoCashLetterTemplateId)
+            .templateId(cardPbaLetterTemplateId)
             .recipientPostalAddress(RecipientPostalAddress.recipientPostalAddressWith()
                                         .addressLine("102 Petty France")
                                         .city(CITY)
