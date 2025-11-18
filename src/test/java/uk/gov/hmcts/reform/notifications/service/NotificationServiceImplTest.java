@@ -24,6 +24,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 import uk.gov.hmcts.reform.notifications.config.PostcodeLookupConfiguration;
 import uk.gov.hmcts.reform.notifications.config.security.idam.IdamServiceImpl;
 import uk.gov.hmcts.reform.notifications.dtos.enums.NotificationType;
+import uk.gov.hmcts.reform.notifications.dtos.request.DocPreviewRequest;
 import uk.gov.hmcts.reform.notifications.dtos.request.Personalisation;
 import uk.gov.hmcts.reform.notifications.dtos.request.RecipientPostalAddress;
 import uk.gov.hmcts.reform.notifications.dtos.request.RefundNotificationEmailRequest;
@@ -940,5 +941,29 @@ public class NotificationServiceImplTest {
             () -> service.deleteNotification("RF-123")
         );
         assertEquals("No records found for given refund reference", ex.getMessage());
+    }
+
+    @Test
+    void previewNotification_shouldThrowException_whenNotificationClientExceptionOccurs() throws NotificationClientException {
+        DocPreviewRequest request = mock(DocPreviewRequest.class);
+        Personalisation personalisation = mock(Personalisation.class);
+        when(personalisation.getRefundReason()).thenReturn("test");
+        when(request.getPersonalisation()).thenReturn(personalisation);
+        when(request.getNotificationType()).thenReturn(NotificationType.EMAIL);
+        when(request.getPersonalisation().getRefundReason()).thenReturn(String.valueOf(Personalisation.personalisationRequestWith().refundReason("test").build()));
+        when(request.getServiceName()).thenReturn("Probate");
+        when(serviceContactRepository.findByServiceName(any())).thenReturn(Optional.of(ServiceContact.serviceContactWith().serviceMailbox("mailbox").build()));
+        when(notificationRefundReasonRepository.findByRefundReasonCode(any())).thenReturn(Optional.of(NotificationRefundReasons.notificationRefundReasonWith().refundReasonNotification("reason").build()));
+        when(request.getPaymentChannel()).thenReturn("channel");
+        when(request.getPaymentMethod()).thenReturn("method");
+        when(request.getRecipientPostalAddress()).thenReturn(null);
+        when(request.getPersonalisation().getCcdCaseNumber()).thenReturn("ccd");
+        when(notificationEmailClient.generateTemplatePreview(any(), anyMap()))
+            .thenThrow(new NotificationClientException("error"));
+
+        assertThrows(
+            RuntimeException.class,
+            () -> notificationServiceImpl.previewNotification(request, map)
+        );
     }
 }
