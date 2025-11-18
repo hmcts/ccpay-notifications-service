@@ -39,6 +39,7 @@ import uk.gov.hmcts.reform.notifications.exceptions.InvalidAddressException;
 import uk.gov.hmcts.reform.notifications.exceptions.InvalidApiKeyException;
 import uk.gov.hmcts.reform.notifications.exceptions.InvalidTemplateId;
 import uk.gov.hmcts.reform.notifications.exceptions.NotificationListEmptyException;
+import uk.gov.hmcts.reform.notifications.exceptions.NotificationNotFoundException;
 import uk.gov.hmcts.reform.notifications.exceptions.PostCodeLookUpException;
 import uk.gov.hmcts.reform.notifications.exceptions.RefundReasonNotFoundException;
 import uk.gov.hmcts.reform.notifications.mapper.EmailNotificationMapper;
@@ -67,6 +68,7 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Supplier;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -75,6 +77,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyMap;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.MOCK;
 
@@ -239,13 +242,13 @@ public class NotificationServiceImplTest {
         .build();
 
     @BeforeEach
-    private void setup() {
+    public void setup() {
         when(postcodeLookupConfiguration.getUrl()).thenReturn("https://api.os.uk/search/places/v1");
         when(postcodeLookupConfiguration.getAccessKey()).thenReturn("dummy");
     }
 
     @Test
-  public   void throwNotificationListEmptyExceptionWhenNotificationListIsEmpty() {
+  public void throwNotificationListEmptyExceptionWhenNotificationListIsEmpty() {
         when(notificationRepository.findByReferenceOrderByDateUpdatedDesc(anyString())).thenReturn(Optional.empty());
 
         assertThrows(NotificationListEmptyException.class, () -> notificationServiceImpl
@@ -910,5 +913,32 @@ public class NotificationServiceImplTest {
 
         assertThrows(RefundReasonNotFoundException.class, () -> notificationServiceImpl.sendEmailNotification(request, any()
         ));
+    }
+
+
+    @Test
+    void deleteNotification_shouldNotThrow_whenRecordsDeleted() {
+        NotificationRepository mockRepo = mock(NotificationRepository.class);
+        NotificationServiceImpl service = new NotificationServiceImpl();
+        service.notificationRepository = mockRepo;
+
+        when(mockRepo.deleteByReference("RF-123")).thenReturn(1L);
+
+        assertDoesNotThrow(() -> service.deleteNotification("RF-123"));
+    }
+
+    @Test
+    void deleteNotification_shouldThrow_whenNoRecordsDeleted() {
+        NotificationRepository mockRepo = mock(NotificationRepository.class);
+        NotificationServiceImpl service = new NotificationServiceImpl();
+        service.notificationRepository = mockRepo;
+
+        when(mockRepo.deleteByReference("RF-123")).thenReturn(0L);
+
+        NotificationNotFoundException ex = assertThrows(
+            NotificationNotFoundException.class,
+            () -> service.deleteNotification("RF-123")
+        );
+        assertEquals("No records found for given refund reference", ex.getMessage());
     }
 }
