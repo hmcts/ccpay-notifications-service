@@ -242,7 +242,7 @@ public class NotificationServiceImplTest {
         .build();
 
     @BeforeEach
-    public void setup() {
+    void setup() {
         when(postcodeLookupConfiguration.getUrl()).thenReturn("https://api.os.uk/search/places/v1");
         when(postcodeLookupConfiguration.getAccessKey()).thenReturn("dummy");
     }
