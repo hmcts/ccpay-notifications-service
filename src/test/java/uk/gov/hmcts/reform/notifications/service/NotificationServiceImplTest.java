@@ -954,10 +954,13 @@ public class NotificationServiceImplTest {
         when(personalisation.getRefundReason()).thenReturn("test");
         when(request.getPersonalisation()).thenReturn(personalisation);
         when(request.getNotificationType()).thenReturn(NotificationType.EMAIL);
-        when(request.getPersonalisation().getRefundReason()).thenReturn(String.valueOf(Personalisation.personalisationRequestWith().refundReason("test").build()));
+        when(request.getPersonalisation().getRefundReason()).thenReturn(String.valueOf(
+            Personalisation.personalisationRequestWith().refundReason("test").build()));
         when(request.getServiceName()).thenReturn("Probate");
-        when(serviceContactRepository.findByServiceName(any())).thenReturn(Optional.of(ServiceContact.serviceContactWith().serviceMailbox("mailbox").build()));
-        when(notificationRefundReasonRepository.findByRefundReasonCode(any())).thenReturn(Optional.of(NotificationRefundReasons.notificationRefundReasonWith().refundReasonNotification("reason").build()));
+        when(serviceContactRepository.findByServiceName(any())).thenReturn(Optional.of(
+            ServiceContact.serviceContactWith().serviceMailbox("mailbox").build()));
+        when(notificationRefundReasonRepository.findByRefundReasonCode(any())).thenReturn(Optional.of(
+            NotificationRefundReasons.notificationRefundReasonWith().refundReasonNotification("reason").build()));
         when(request.getPaymentChannel()).thenReturn("bulk scan");
         when(request.getPaymentMethod()).thenReturn("cash");
         when(request.getRecipientPostalAddress()).thenReturn(null);
