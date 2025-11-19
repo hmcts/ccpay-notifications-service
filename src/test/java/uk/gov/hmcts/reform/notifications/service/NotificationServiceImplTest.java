@@ -8,7 +8,9 @@ import org.junit.jupiter.api.TestInstance;
 import org.mockito.ArgumentMatchers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.Spy;
+import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -61,6 +63,7 @@ import uk.gov.service.notify.SendEmailResponse;
 import uk.gov.service.notify.SendLetterResponse;
 import uk.gov.service.notify.TemplatePreview;
 
+import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.Date;
@@ -79,6 +82,7 @@ import static org.mockito.ArgumentMatchers.anyMap;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.MOCK;
 
@@ -954,8 +958,8 @@ public class NotificationServiceImplTest {
         when(request.getServiceName()).thenReturn("Probate");
         when(serviceContactRepository.findByServiceName(any())).thenReturn(Optional.of(ServiceContact.serviceContactWith().serviceMailbox("mailbox").build()));
         when(notificationRefundReasonRepository.findByRefundReasonCode(any())).thenReturn(Optional.of(NotificationRefundReasons.notificationRefundReasonWith().refundReasonNotification("reason").build()));
-        when(request.getPaymentChannel()).thenReturn("channel");
-        when(request.getPaymentMethod()).thenReturn("method");
+        when(request.getPaymentChannel()).thenReturn("bulk scan");
+        when(request.getPaymentMethod()).thenReturn("cash");
         when(request.getRecipientPostalAddress()).thenReturn(null);
         when(request.getPersonalisation().getCcdCaseNumber()).thenReturn("ccd");
         when(notificationEmailClient.generateTemplatePreview(any(), anyMap()))
@@ -965,5 +969,25 @@ public class NotificationServiceImplTest {
             RuntimeException.class,
             () -> notificationServiceImpl.previewNotification(request, map)
         );
+    }
+
+
+    @Test
+    void testGetInstructionType_bulkScan() throws Exception {
+        NotificationServiceImpl service = new NotificationServiceImpl();
+        Method method = NotificationServiceImpl.class.getDeclaredMethod("getInstructionType", String.class, String.class);
+        method.setAccessible(true);
+
+        String result = (String) method.invoke(service, "bulk scan", "cheque");
+        assertEquals("SendRefund", result);
+
+        result = (String) method.invoke(service, "bulk scan", "cash");
+        assertEquals("RefundWhenContacted", result);
+
+        result = (String) method.invoke(service, "bulk scan", "postal order");
+        assertEquals("RefundWhenContacted", result);
+
+        result = (String) method.invoke(service, "other", "card");
+        assertEquals("SendRefund", result);
     }
 }
