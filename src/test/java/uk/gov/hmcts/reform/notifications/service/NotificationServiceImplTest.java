@@ -979,7 +979,7 @@ public class NotificationServiceImplTest {
         method.setAccessible(true);
 
         String result = (String) method.invoke(service, "bulk scan", "cheque");
-        assertEquals("SendRefund", result);
+        assertEquals("RefundWhenContacted", result);
 
         result = (String) method.invoke(service, "bulk scan", "cash");
         assertEquals("RefundWhenContacted", result);

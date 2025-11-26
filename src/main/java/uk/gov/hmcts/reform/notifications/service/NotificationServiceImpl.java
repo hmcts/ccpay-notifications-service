@@ -103,6 +103,8 @@ public class NotificationServiceImpl implements NotificationService {
 
     private static final String POSTAL_ORDER = "postal order";
 
+    private static final String CHEQUE = "cheque";
+
     private static final String BULK_SCAN = "bulk scan";
 
     private static final String REFUND_WHEN_CONTACTED = "RefundWhenContacted";
@@ -431,7 +433,7 @@ public class NotificationServiceImpl implements NotificationService {
 
         String instructionType;
         if (BULK_SCAN.equals(paymentChannel) && (CASH.equals(paymentMethod)
-            || POSTAL_ORDER.equals(paymentMethod))) {
+            || POSTAL_ORDER.equals(paymentMethod) || CHEQUE.equals(paymentMethod))) {
             instructionType = REFUND_WHEN_CONTACTED;
         } else {
             instructionType = SEND_REFUND;
