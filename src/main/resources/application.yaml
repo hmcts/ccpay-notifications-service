@@ -98,10 +98,6 @@ oidc:
   audience-list: ${OIDC_AUDIENCE_LIST}
   issuer: ${OIDC_ISSUER}
 
-azure:
-  application-insights:
-    instrumentation-key: ${APPINSIGHTS_INSTRUMENTATIONKEY:dummy}
-
 
 notify:
   letter.apiKey: ${LETTER_APIKEY}

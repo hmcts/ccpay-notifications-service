@@ -101,10 +101,6 @@ public class NotificationServiceImpl implements NotificationService {
 
     private static final Logger LOG = LoggerFactory.getLogger(NotificationServiceImpl.class);
 
-    private static final String POSTAL_ORDER = "postal order";
-
-    private static final String BULK_SCAN = "bulk scan";
-
     private static final String REFUND_WHEN_CONTACTED = "RefundWhenContacted";
 
     private static final String SEND_REFUND = "SendRefund";
@@ -112,8 +108,6 @@ public class NotificationServiceImpl implements NotificationService {
     private static final String EMAIL = "EMAIL";
 
     private static final String LETTER = "LETTER";
-
-    private static final String CASH = "cash";
 
     private static final String STRING = "string";
 
@@ -433,19 +427,6 @@ public class NotificationServiceImpl implements NotificationService {
             .html(html)
             .from(notificationTemplateResponseMapper.toFromMapper(notificationType, serviceContact))
             .build();
-    }
-
-    private String getInstructionType(String paymentChannel, String paymentMethod) {
-
-        String instructionType;
-        if (BULK_SCAN.equals(paymentChannel) && (CASH.equals(paymentMethod)
-            || POSTAL_ORDER.equals(paymentMethod))) {
-            instructionType = REFUND_WHEN_CONTACTED;
-        } else {
-            instructionType = SEND_REFUND;
-        }
-
-        return instructionType;
     }
 
     private String getRefundReason(String refundReasonCode) {
