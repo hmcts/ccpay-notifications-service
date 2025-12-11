@@ -973,10 +973,6 @@ public class NotificationServiceImplTest {
                     .refundReasonNotification("There has been an amendment to your claim")
                     .build()
             ));
-        // Mock getTemplate method indirectly by spying or by setting up the required context for its logic
-        // For simplicity, assume EMAIL type returns defaultTemplateId
-        // If NotificationServiceImpl is not a spy, this will work if chequePoCashEmailTemplateId or similar is set to defaultTemplateId
-        // Otherwise, refactor test to use a spy and stub getTemplate
 
         // Set up required field in NotificationServiceImpl for templateId
         java.lang.reflect.Field field = notificationServiceImpl.getClass().getDeclaredField("chequePoCashEmailTemplateId");
