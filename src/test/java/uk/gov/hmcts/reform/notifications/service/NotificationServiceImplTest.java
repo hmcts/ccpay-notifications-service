@@ -41,7 +41,6 @@ import uk.gov.hmcts.reform.notifications.exceptions.InvalidAddressException;
 import uk.gov.hmcts.reform.notifications.exceptions.InvalidApiKeyException;
 import uk.gov.hmcts.reform.notifications.exceptions.InvalidTemplateId;
 import uk.gov.hmcts.reform.notifications.exceptions.NotificationListEmptyException;
-import uk.gov.hmcts.reform.notifications.exceptions.NotificationNotFoundException;
 import uk.gov.hmcts.reform.notifications.exceptions.PostCodeLookUpException;
 import uk.gov.hmcts.reform.notifications.exceptions.RefundReasonNotFoundException;
 import uk.gov.hmcts.reform.notifications.mapper.EmailNotificationMapper;
@@ -62,7 +61,6 @@ import uk.gov.service.notify.SendEmailResponse;
 import uk.gov.service.notify.SendLetterResponse;
 import uk.gov.service.notify.TemplatePreview;
 
-import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.Date;
@@ -71,7 +69,6 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Supplier;
 
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -80,7 +77,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyMap;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.MOCK;
 
