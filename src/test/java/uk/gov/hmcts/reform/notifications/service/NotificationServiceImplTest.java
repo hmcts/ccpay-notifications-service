@@ -522,6 +522,13 @@ public class NotificationServiceImplTest {
             .build();
         when(serviceContactRepository.findByServiceName(any()))
             .thenReturn(Optional.of(ServiceContact.serviceContactWith().id(1).serviceName("Probate").serviceMailbox("probate@gov.uk").build()));
+        when(notificationRefundReasonRepository.findByRefundReasonCode(any()))
+            .thenReturn(Optional.of(
+                NotificationRefundReasons
+                    .notificationRefundReasonWith()
+                    .refundReasonNotification("There has been an amendment to your claim")
+                    .build()
+            ));
 
         SendLetterResponse response = new SendLetterResponse(
             "{\"content\":{\"body\":\"Hello Unknown\\r\\n\\r\\nRefund Approved on 2022-01-01\","
@@ -539,13 +546,6 @@ public class NotificationServiceImplTest {
         when(notificationLetterClient.sendLetter(any(), any(), any())).thenReturn(response);
         when(letterNotificationMapper.letterResponseMapper(any(),any(),any())).thenReturn(notification);
         when(notificationRepository.save(notification)).thenReturn(notification);
-        when(notificationRefundReasonRepository.findByRefundReasonCode(any()))
-            .thenReturn(Optional.of(
-                NotificationRefundReasons
-                    .notificationRefundReasonWith()
-                    .refundReasonNotification("There has been an amendment to your claim")
-                    .build()
-        ));
 
         response = notificationServiceImpl.sendLetterNotification(request,any());
         assertEquals("Refund Notification", response.getSubject());
@@ -980,5 +980,51 @@ public class NotificationServiceImplTest {
         field.set(notificationServiceImpl, defaultTemplateId);
         NotificationTemplatePreviewResponse response = notificationServiceImpl.previewNotification(docPreviewRequest, map);
         assertEquals(expectedResponse, response);
+    }
+
+    @Test
+    void testPreviewNotificationThrowsInvalidTemplateIdOnNotificationClientException() throws Exception {
+        DocPreviewRequest docPreviewRequest = new DocPreviewRequest();
+        docPreviewRequest.setNotificationType(NotificationType.EMAIL);
+        docPreviewRequest.setServiceName("Probate");
+        Personalisation personalisation = new Personalisation();
+        personalisation.setRefundReason("test-reason");
+        personalisation.setCcdCaseNumber("ccd-123");
+        docPreviewRequest.setPersonalisation(personalisation);
+        // Provide an invalid templateId that will cause the client to throw
+        docPreviewRequest.setTemplateId("invalid-template-id");
+
+        ServiceContact serviceContact = ServiceContact.serviceContactWith()
+            .id(1).serviceName("Probate").serviceMailbox("probate@gov.uk").build();
+        when(serviceContactRepository.findByServiceName(any())).thenReturn(Optional.of(serviceContact));
+        when(notificationRefundReasonRepository.findByRefundReasonCode(any()))
+            .thenReturn(Optional.of(
+                NotificationRefundReasons
+                    .notificationRefundReasonWith()
+                    .refundReasonNotification("There has been an amendment to your claim")
+                    .build()
+            ));
+
+        String errorMessage = "Status code: 400 {\"errors\":[{\"error\":\"BadRequestError\","
+            + "\"message\":\"template_id is not a valid UUID\"}],\"status_code\":400}\n";
+        // Simulate GOV.UK Notify client throwing during generateTemplatePreview
+        when(notificationEmailClient.generateTemplatePreview(eq("invalid-template-id"), anyMap()))
+            .thenThrow(new NotificationClientException(errorMessage));
+
+        assertThrows(InvalidTemplateId.class, () -> notificationServiceImpl.previewNotification(docPreviewRequest, map));
+    }
+
+    @Test
+    void testDeleteNotificationDeletesRecordsWhenFound() {
+        when(notificationRepository.deleteByReference(eq("RF-123"))).thenReturn(2L);
+        notificationServiceImpl.deleteNotification("RF-123");
+        // No exception means success; repository call verified by stubbing
+    }
+
+    @Test
+    void testDeleteNotificationThrowsWhenNoRecordsFound() {
+        when(notificationRepository.deleteByReference(eq("RF-999"))).thenReturn(0L);
+        assertThrows(uk.gov.hmcts.reform.notifications.exceptions.NotificationNotFoundException.class,
+            () -> notificationServiceImpl.deleteNotification("RF-999"));
     }
 }
