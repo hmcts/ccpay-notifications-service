@@ -924,15 +924,15 @@ public class NotificationServiceImplTest {
         docPreviewRequest.setNotificationType(NotificationType.EMAIL);
         docPreviewRequest.setServiceName("Probate");
         Personalisation personalisation = new Personalisation();
-        personalisation.setRefundReason("reason");
+        personalisation.setRefundReason("test-reason");
         personalisation.setCcdCaseNumber("ccd-123");
         docPreviewRequest.setPersonalisation(personalisation);
 
         ServiceContact serviceContact = ServiceContact.serviceContactWith().id(1).serviceName("Probate").serviceMailbox("probate@gov.uk").build();
         when(serviceContactRepository.findByServiceName(any())).thenReturn(Optional.of(serviceContact));
         TemplatePreview templatePreview = new TemplatePreview(
-            "{\"id\":\"11111111-1111-1111-1111-111111111111\",\"type\":\"email\",\"version\":1,\"body\":\"body\","
-            + "\"subject\":\"subject\",\"html\":\"html\"}");
+            "{\"id\":\"11111111-1111-1111-1111-111111111111\",\"type\":\"email\",\"version\":1,\"body\":\"body\"," +
+                "\"subject\":\"subject\",\"html\":\"html\"}");
         when(notificationEmailClient.generateTemplatePreview(eq(customTemplateId), anyMap())).thenReturn(templatePreview);
         NotificationTemplatePreviewResponse expectedResponse = new NotificationTemplatePreviewResponse();
         when(notificationTemplateResponseMapper.notificationPreviewResponse(any(), any(), any())).thenReturn(expectedResponse);
