@@ -322,8 +322,9 @@ public class NotificationServiceImpl implements NotificationService {
         LOG.info("Refund reference in previewNotification {}", refundRef);
         String refundReason = getRefundReason(docPreviewRequest.getPersonalisation().getRefundReason());
         LOG.info("Refund reason in previewNotification {}", refundReason);
-        String ccdCaseNumber;
+
         instructionType = getInstructionType(docPreviewRequest.getPaymentChannel(),docPreviewRequest.getPaymentMethod());
+        LOG.info("Instruction Type in previewNotification {}", instructionType);
 
         Optional<ServiceContact> serviceContactOptional = serviceContactRepository.findByServiceName(docPreviewRequest.getServiceName());
         ServiceContact serviceContact = new ServiceContact();
@@ -332,9 +333,15 @@ public class NotificationServiceImpl implements NotificationService {
             serviceContact = serviceContactOptional.get();
         }
 
-        ccdCaseNumber = docPreviewRequest.getPersonalisation().getCcdCaseNumber();
+        String ccdCaseNumber = docPreviewRequest.getPersonalisation().getCcdCaseNumber();
 
         String templateId = getTemplate(docPreviewRequest, instructionType);
+        if (docPreviewRequest.getTemplateId() != null && !docPreviewRequest.getTemplateId().isEmpty()) {
+            LOG.info("Using templateId from request {}", docPreviewRequest.getTemplateId());
+            templateId = docPreviewRequest.getTemplateId();
+        }
+        LOG.info("Template Id in previewNotification {}", templateId);
+
         try {
             if (EMAIL.equalsIgnoreCase(docPreviewRequest.getNotificationType().name())) {
                 templatePreview = notificationEmailClient
@@ -358,8 +365,8 @@ public class NotificationServiceImpl implements NotificationService {
             }
 
             notificationTemplatePreviewResponse = notificationTemplateResponseMapper.notificationPreviewResponse(templatePreview,
-                                                                                                             docPreviewRequest,
-                                                                                                             serviceContact);
+                                                                                                                 docPreviewRequest,
+                                                                                                                 serviceContact);
         } catch (NotificationClientException exception) {
             LOG.error("NotificationServiceImpl.previewNotification() : {}", exception);
             GovNotifyExceptionWrapper exceptionWrapper = new GovNotifyExceptionWrapper();
