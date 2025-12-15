@@ -11,7 +11,8 @@ import uk.gov.hmcts.reform.notifications.dtos.enums.NotificationType;
 import java.math.BigDecimal;
 import java.util.Set;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class DocPreviewRequestTest {
 
