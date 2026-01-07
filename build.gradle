@@ -246,7 +246,7 @@ dependencies {
   implementation group: 'com.github.spotbugs', name: 'spotbugs-annotations', version: '4.9.8'
   implementation group: 'com.google.guava', name: 'guava', version: '33.5.0-jre'
   implementation group: 'com.nimbusds', name: 'nimbus-jose-jwt', version: '10.5'
-  implementation group: 'io.hypersistence', name: 'hypersistence-utils-hibernate-63', version: '3.11.0'
+  implementation group: 'io.hypersistence', name: 'hypersistence-utils-hibernate-63', version: '3.13.3'
   implementation group: 'jakarta.inject', name: 'jakarta.inject-api', version: '2.0.1'
   implementation group: 'net.logstash.logback', name: 'logstash-logback-encoder', version: '9.0'
   implementation group: 'org.apache.httpcomponents.client5', name: 'httpclient5', version: '5.3.1'
@@ -283,7 +283,7 @@ dependencies {
   integrationTestImplementation sourceSets.main.runtimeClasspath
   integrationTestImplementation sourceSets.test.runtimeClasspath
 
-  smokeTestImplementation group: 'io.rest-assured', name: 'rest-assured', version: '5.5.6'
+  smokeTestImplementation group: 'io.rest-assured', name: 'rest-assured', version: '6.0.0'
   smokeTestImplementation sourceSets.main.runtimeClasspath
   smokeTestImplementation sourceSets.test.runtimeClasspath
   smokeTestImplementation group :'org.projectlombok', name:'lombok', version: versions.lombok
