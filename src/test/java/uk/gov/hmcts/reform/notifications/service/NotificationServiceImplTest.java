@@ -24,6 +24,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 import uk.gov.hmcts.reform.notifications.config.PostcodeLookupConfiguration;
 import uk.gov.hmcts.reform.notifications.config.security.idam.IdamServiceImpl;
 import uk.gov.hmcts.reform.notifications.dtos.enums.NotificationType;
+import uk.gov.hmcts.reform.notifications.dtos.request.DocPreviewRequest;
 import uk.gov.hmcts.reform.notifications.dtos.request.Personalisation;
 import uk.gov.hmcts.reform.notifications.dtos.request.RecipientPostalAddress;
 import uk.gov.hmcts.reform.notifications.dtos.request.RefundNotificationEmailRequest;
@@ -33,6 +34,7 @@ import uk.gov.hmcts.reform.notifications.dtos.response.FromTemplateContact;
 import uk.gov.hmcts.reform.notifications.dtos.response.IdamUserIdResponse;
 import uk.gov.hmcts.reform.notifications.dtos.response.MailAddress;
 import uk.gov.hmcts.reform.notifications.dtos.response.NotificationResponseDto;
+import uk.gov.hmcts.reform.notifications.dtos.response.NotificationTemplatePreviewResponse;
 import uk.gov.hmcts.reform.notifications.dtos.response.PostCodeResponse;
 import uk.gov.hmcts.reform.notifications.dtos.response.PostCodeResult;
 import uk.gov.hmcts.reform.notifications.exceptions.InvalidAddressException;
@@ -183,7 +185,8 @@ public class NotificationServiceImplTest {
             .build();
     }
 
-    public static final Supplier<Notification> emailNotificationListSupplierBasedOnRefundRef = () -> Notification.builder()
+    public static final Supplier<Notification> emailNotificationListSupplierBasedOnRefundRef
+        = () -> Notification.builder()
         .id(1)
         .notificationType("EMAIL")
         .reference("RF-124")
@@ -239,13 +242,13 @@ public class NotificationServiceImplTest {
         .build();
 
     @BeforeEach
-    private void setup() {
+    void setup() {
         when(postcodeLookupConfiguration.getUrl()).thenReturn("https://api.os.uk/search/places/v1");
         when(postcodeLookupConfiguration.getAccessKey()).thenReturn("dummy");
     }
 
     @Test
-  public   void throwNotificationListEmptyExceptionWhenNotificationListIsEmpty() {
+  public void throwNotificationListEmptyExceptionWhenNotificationListIsEmpty() {
         when(notificationRepository.findByReferenceOrderByDateUpdatedDesc(anyString())).thenReturn(Optional.empty());
 
         assertThrows(NotificationListEmptyException.class, () -> notificationServiceImpl
@@ -306,7 +309,8 @@ public class NotificationServiceImplTest {
             .reference("REF-123")
             .recipientEmailAddress("test@test.com")
             .personalisation(
-                Personalisation.personalisationRequestWith().ccdCaseNumber("1600162727220633").refundReference("RF-1234-1234-1234-1234").refundAmount(
+                Personalisation.personalisationRequestWith().ccdCaseNumber("1600162727220633")
+                    .refundReference("RF-1234-1234-1234-1234").refundAmount(
                     BigDecimal.valueOf(10)).refundReason("test").build())
             .build();
         when(serviceContactRepository.findByServiceName(any()))
@@ -518,6 +522,13 @@ public class NotificationServiceImplTest {
             .build();
         when(serviceContactRepository.findByServiceName(any()))
             .thenReturn(Optional.of(ServiceContact.serviceContactWith().id(1).serviceName("Probate").serviceMailbox("probate@gov.uk").build()));
+        when(notificationRefundReasonRepository.findByRefundReasonCode(any()))
+            .thenReturn(Optional.of(
+                NotificationRefundReasons
+                    .notificationRefundReasonWith()
+                    .refundReasonNotification("There has been an amendment to your claim")
+                    .build()
+            ));
 
         SendLetterResponse response = new SendLetterResponse(
             "{\"content\":{\"body\":\"Hello Unknown\\r\\n\\r\\nRefund Approved on 2022-01-01\","
@@ -535,13 +546,7 @@ public class NotificationServiceImplTest {
         when(notificationLetterClient.sendLetter(any(), any(), any())).thenReturn(response);
         when(letterNotificationMapper.letterResponseMapper(any(),any(),any())).thenReturn(notification);
         when(notificationRepository.save(notification)).thenReturn(notification);
-        when(notificationRefundReasonRepository.findByRefundReasonCode(any()))
-            .thenReturn(Optional.of(
-                NotificationRefundReasons
-                    .notificationRefundReasonWith()
-                    .refundReasonNotification("There has been an amendment to your claim")
-                    .build()
-        ));
+
 
         response = notificationServiceImpl.sendLetterNotification(request,any());
         assertEquals("Refund Notification", response.getSubject());
@@ -910,5 +915,282 @@ public class NotificationServiceImplTest {
 
         assertThrows(RefundReasonNotFoundException.class, () -> notificationServiceImpl.sendEmailNotification(request, any()
         ));
+    }
+
+    @Test
+    void testPreviewNotificationWithTemplateIdSet() throws Exception {
+        DocPreviewRequest docPreviewRequest = new DocPreviewRequest();
+        String customTemplateId = "11111111-1111-1111-1111-111111111111";
+        docPreviewRequest.setTemplateId(customTemplateId);
+        docPreviewRequest.setNotificationType(NotificationType.EMAIL);
+        docPreviewRequest.setServiceName("Probate");
+        Personalisation personalisation = new Personalisation();
+        personalisation.setRefundReason("test-reason");
+        personalisation.setCcdCaseNumber("ccd-123");
+        docPreviewRequest.setPersonalisation(personalisation);
+
+        ServiceContact serviceContact = ServiceContact.serviceContactWith().id(1).serviceName("Probate").serviceMailbox("probate@gov.uk").build();
+        when(serviceContactRepository.findByServiceName(any())).thenReturn(Optional.of(serviceContact));
+        TemplatePreview templatePreview = new TemplatePreview(
+            "{\"id\":\"11111111-1111-1111-1111-111111111111\",\"type\":\"email\",\"version\":1,\"body\":\"body\","
+                + "\"subject\":\"subject\",\"html\":\"html\"}");
+        when(notificationEmailClient.generateTemplatePreview(eq(customTemplateId), anyMap())).thenReturn(templatePreview);
+        NotificationTemplatePreviewResponse expectedResponse = new NotificationTemplatePreviewResponse();
+        when(notificationTemplateResponseMapper.notificationPreviewResponse(any(), any(), any())).thenReturn(expectedResponse);
+        when(notificationRefundReasonRepository.findByRefundReasonCode(any()))
+            .thenReturn(Optional.of(
+                NotificationRefundReasons
+                    .notificationRefundReasonWith()
+                    .refundReasonNotification("There has been an amendment to your claim")
+                    .build()
+            ));
+        NotificationTemplatePreviewResponse response = notificationServiceImpl.previewNotification(docPreviewRequest, map);
+        assertEquals(expectedResponse, response);
+    }
+
+    @Test
+    void testPreviewNotificationWithTemplateIdNotSet() throws Exception {
+        DocPreviewRequest docPreviewRequest = new DocPreviewRequest();
+        docPreviewRequest.setNotificationType(NotificationType.EMAIL);
+        docPreviewRequest.setServiceName("Probate");
+        Personalisation personalisation = new Personalisation();
+        personalisation.setRefundReason("test-reason");
+        personalisation.setCcdCaseNumber("ccd-123");
+        docPreviewRequest.setPersonalisation(personalisation);
+
+        ServiceContact serviceContact = ServiceContact.serviceContactWith().id(1).serviceName("Probate").serviceMailbox("probate@gov.uk").build();
+        when(serviceContactRepository.findByServiceName(any())).thenReturn(Optional.of(serviceContact));
+        // getTemplate will be called, so mock its result
+        String defaultTemplateId = "00000000-0000-0000-0000-000000000000";
+        when(notificationEmailClient.generateTemplatePreview(eq(defaultTemplateId), anyMap())).thenReturn(new TemplatePreview(
+            "{\"id\":\"00000000-0000-0000-0000-000000000000\",\"type\":\"email\",\"version\":1,\"body\":\"body\",\"subject\":"
+                  + "\"subject\",\"html\":\"html\"}"));
+        NotificationTemplatePreviewResponse expectedResponse = new NotificationTemplatePreviewResponse();
+        when(notificationTemplateResponseMapper.notificationPreviewResponse(any(), any(), any())).thenReturn(expectedResponse);
+        when(notificationRefundReasonRepository.findByRefundReasonCode(any()))
+            .thenReturn(Optional.of(
+                NotificationRefundReasons
+                    .notificationRefundReasonWith()
+                    .refundReasonNotification("There has been an amendment to your claim")
+                    .build()
+            ));
+
+        // Set up required field in NotificationServiceImpl for templateId
+        java.lang.reflect.Field field = notificationServiceImpl.getClass().getDeclaredField("chequePoCashEmailTemplateId");
+        field.setAccessible(true);
+        field.set(notificationServiceImpl, defaultTemplateId);
+        NotificationTemplatePreviewResponse response = notificationServiceImpl.previewNotification(docPreviewRequest, map);
+        assertEquals(expectedResponse, response);
+    }
+
+    @Test
+    void testPreviewNotificationThrowsInvalidTemplateIdOnNotificationClientException() throws Exception {
+        DocPreviewRequest docPreviewRequest = new DocPreviewRequest();
+        docPreviewRequest.setNotificationType(NotificationType.EMAIL);
+        docPreviewRequest.setServiceName("Probate");
+        Personalisation personalisation = new Personalisation();
+        personalisation.setRefundReason("test-reason");
+        personalisation.setCcdCaseNumber("ccd-123");
+        docPreviewRequest.setPersonalisation(personalisation);
+        // Provide an invalid templateId that will cause the client to throw
+        docPreviewRequest.setTemplateId("invalid-template-id");
+
+        ServiceContact serviceContact = ServiceContact.serviceContactWith()
+            .id(1).serviceName("Probate").serviceMailbox("probate@gov.uk").build();
+        when(serviceContactRepository.findByServiceName(any())).thenReturn(Optional.of(serviceContact));
+        when(notificationRefundReasonRepository.findByRefundReasonCode(any()))
+            .thenReturn(Optional.of(
+                NotificationRefundReasons
+                    .notificationRefundReasonWith()
+                    .refundReasonNotification("There has been an amendment to your claim")
+                    .build()
+            ));
+
+        String errorMessage = "Status code: 400 {\"errors\":[{\"error\":\"BadRequestError\","
+            + "\"message\":\"template_id is not a valid UUID\"}],\"status_code\":400}\n";
+        // Simulate GOV.UK Notify client throwing during generateTemplatePreview
+        when(notificationEmailClient.generateTemplatePreview(eq("invalid-template-id"), anyMap()))
+            .thenThrow(new NotificationClientException(errorMessage));
+
+        assertThrows(InvalidTemplateId.class, () -> notificationServiceImpl.previewNotification(docPreviewRequest, map));
+    }
+
+    @Test
+    void testDeleteNotificationDeletesRecordsWhenFound() {
+        when(notificationRepository.deleteByReference(eq("RF-123"))).thenReturn(2L);
+        notificationServiceImpl.deleteNotification("RF-123");
+        // No exception means success; repository call verified by stubbing
+    }
+
+    @Test
+    void testDeleteNotificationThrowsWhenNoRecordsFound() {
+        when(notificationRepository.deleteByReference(eq("RF-999"))).thenReturn(0L);
+        assertThrows(uk.gov.hmcts.reform.notifications.exceptions.NotificationNotFoundException.class,
+            () -> notificationServiceImpl.deleteNotification("RF-999"));
+    }
+
+    @Test
+    void testPreviewNotificationBulkScanCashEmail_usesChequePoCashEmailTemplate() throws Exception {
+        DocPreviewRequest req = new DocPreviewRequest();
+        req.setNotificationType(NotificationType.EMAIL);
+        req.setServiceName("Probate");
+        Personalisation p = new Personalisation();
+        p.setRefundReason("test-reason");
+        p.setCcdCaseNumber("ccd-123");
+        p.setRefundReference("RF-1234-5678-9012-3456");
+        req.setPersonalisation(p);
+        req.setPaymentChannel("bulk scan");
+        req.setPaymentMethod("cash");
+
+        ServiceContact sc = ServiceContact.serviceContactWith().id(1).serviceName("Probate").serviceMailbox("probate@gov.uk").build();
+        when(serviceContactRepository.findByServiceName(any())).thenReturn(Optional.of(sc));
+        when(notificationRefundReasonRepository.findByRefundReasonCode(any())).thenReturn(Optional.of(
+            NotificationRefundReasons.notificationRefundReasonWith().refundReasonNotification("Reason text").build()
+        ));
+        // Set template IDs via reflection
+        java.lang.reflect.Field emailField = notificationServiceImpl.getClass().getDeclaredField("chequePoCashEmailTemplateId");
+        emailField.setAccessible(true);
+        String templateId = "00000000-0000-0000-0000-000000000000";
+        emailField.set(notificationServiceImpl, templateId);
+        TemplatePreview tp = new TemplatePreview(
+            "{"
+                + "\"id\":\"" + templateId + "\","
+                + "\"type\":\"email\","
+                + "\"version\":1,"
+                + "\"body\":\"b\","
+                + "\"subject\":\"s\","
+                + "\"html\":\"h\""
+                + "}");
+        when(notificationEmailClient.generateTemplatePreview(eq(templateId), anyMap()))
+            .thenReturn(tp);
+        NotificationTemplatePreviewResponse expected = new NotificationTemplatePreviewResponse();
+        when(notificationTemplateResponseMapper.notificationPreviewResponse(any(), any(), any()))
+            .thenReturn(expected);
+
+        NotificationTemplatePreviewResponse resp = notificationServiceImpl.previewNotification(req, map);
+        assertEquals(expected, resp);
+    }
+
+    @Test
+    void testPreviewNotificationBulkScanChequeLetter_usesChequePoCashLetterTemplate() throws Exception {
+        DocPreviewRequest req = new DocPreviewRequest();
+        req.setNotificationType(NotificationType.LETTER);
+        req.setServiceName("Probate");
+        Personalisation p = new Personalisation();
+        p.setRefundReason("test-reason");
+        p.setCcdCaseNumber("ccd-123");
+        p.setRefundReference("RF-1234-5678-9012-3456");
+        req.setPersonalisation(p);
+        req.setPaymentChannel("bulk scan");
+        req.setPaymentMethod("cheque");
+        req.setRecipientPostalAddress(uk.gov.hmcts.reform.notifications.dtos.request.RecipientPostalAddress.recipientPostalAddressWith()
+            .addressLine("a").city("c").county("co").country("ct").postalCode("pc").build());
+
+        ServiceContact sc = ServiceContact.serviceContactWith().id(1).serviceName("Probate").serviceMailbox("probate@gov.uk").build();
+        when(serviceContactRepository.findByServiceName(any())).thenReturn(Optional.of(sc));
+        when(notificationRefundReasonRepository.findByRefundReasonCode(any())).thenReturn(Optional.of(
+            NotificationRefundReasons.notificationRefundReasonWith().refundReasonNotification("Reason text").build()
+        ));
+        java.lang.reflect.Field letterField = notificationServiceImpl.getClass().getDeclaredField("chequePoCashLetterTemplateId");
+        letterField.setAccessible(true);
+        String templateId = "11111111-1111-1111-1111-111111111111";
+        letterField.set(notificationServiceImpl, templateId);
+        TemplatePreview tp = new TemplatePreview(
+            "{"
+                + "\"id\":\"" + templateId + "\","
+                + "\"type\":\"letter\","
+                + "\"version\":1,"
+                + "\"body\":\"b\","
+                + "\"subject\":\"s\","
+                + "\"html\":\"h\""
+                + "}");
+        when(notificationLetterClient.generateTemplatePreview(eq(templateId), anyMap()))
+            .thenReturn(tp);
+        NotificationTemplatePreviewResponse expected = new NotificationTemplatePreviewResponse();
+        when(notificationTemplateResponseMapper.notificationPreviewResponse(any(), any(), any()))
+            .thenReturn(expected);
+
+        NotificationTemplatePreviewResponse resp = notificationServiceImpl.previewNotification(req, map);
+        assertEquals(expected, resp);
+    }
+
+    @Test
+    void testPreviewNotificationBulkScanPostalOrderEmail_usesChequePoCashEmailTemplate_andServiceContactMissing() throws Exception {
+        DocPreviewRequest req = new DocPreviewRequest();
+        req.setNotificationType(NotificationType.EMAIL);
+        req.setServiceName("UnknownService");
+        Personalisation p = new Personalisation();
+        p.setRefundReason("code-long-value");
+        p.setCcdCaseNumber("ccd-789");
+        p.setRefundReference("RF-1111-2222-3333-4444");
+        req.setPersonalisation(p);
+        req.setPaymentChannel("bulk scan");
+        req.setPaymentMethod("postal order");
+
+        when(serviceContactRepository.findByServiceName(any())).thenReturn(Optional.empty());
+        when(notificationRefundReasonRepository.findByRefundReasonCode(any())).thenReturn(Optional.of(
+            NotificationRefundReasons.notificationRefundReasonWith().refundReasonNotification("Mapped reason").build()
+        ));
+        java.lang.reflect.Field emailField = notificationServiceImpl.getClass().getDeclaredField("chequePoCashEmailTemplateId");
+        emailField.setAccessible(true);
+        String templateId = "55555555-5555-5555-5555-555555555555";
+        emailField.set(notificationServiceImpl, templateId);
+        TemplatePreview tp = new TemplatePreview(
+            "{"
+                + "\"id\":\"" + templateId + "\","
+                + "\"type\":\"email\","
+                + "\"version\":1,"
+                + "\"body\":\"b\","
+                + "\"subject\":\"s\","
+                + "\"html\":\"h\""
+                + "}");
+        when(notificationEmailClient.generateTemplatePreview(eq(templateId), anyMap()))
+            .thenReturn(tp);
+        NotificationTemplatePreviewResponse expected = new NotificationTemplatePreviewResponse();
+        when(notificationTemplateResponseMapper.notificationPreviewResponse(any(), any(), any()))
+            .thenReturn(expected);
+        NotificationTemplatePreviewResponse resp = notificationServiceImpl.previewNotification(req, map);
+        assertEquals(expected, resp);
+    }
+
+    @Test
+    void testPreviewNotificationBulkScanPostalOrderLetter_usesChequePoCashLetterTemplate_andServiceContactMissing() throws Exception {
+        DocPreviewRequest req = new DocPreviewRequest();
+        req.setNotificationType(NotificationType.LETTER);
+        req.setServiceName("UnknownService");
+        Personalisation p = new Personalisation();
+        p.setRefundReason("reason-code-long");
+        p.setCcdCaseNumber("ccd-789");
+        p.setRefundReference("RF-9999-8888-7777-6666");
+        req.setPersonalisation(p);
+        req.setPaymentChannel("bulk scan");
+        req.setPaymentMethod("postal order");
+        req.setRecipientPostalAddress(RecipientPostalAddress.recipientPostalAddressWith()
+            .addressLine("line1").city("city").county("county").country("country").postalCode("PC1 1AA").build());
+
+        when(serviceContactRepository.findByServiceName(any())).thenReturn(Optional.empty());
+        when(notificationRefundReasonRepository.findByRefundReasonCode(any())).thenReturn(Optional.of(
+            NotificationRefundReasons.notificationRefundReasonWith().refundReasonNotification("Mapped reason").build()
+        ));
+        java.lang.reflect.Field letterField = notificationServiceImpl.getClass().getDeclaredField("chequePoCashLetterTemplateId");
+        letterField.setAccessible(true);
+        String templateId = "66666666-6666-6666-6666-666666666666";
+        letterField.set(notificationServiceImpl, templateId);
+        TemplatePreview tp = new TemplatePreview(
+            "{"
+                + "\"id\":\"" + templateId + "\","
+                + "\"type\":\"letter\","
+                + "\"version\":1,"
+                + "\"body\":\"b\","
+                + "\"subject\":\"s\","
+                + "\"html\":\"h\""
+                + "}");
+        when(notificationLetterClient.generateTemplatePreview(eq(templateId), anyMap()))
+            .thenReturn(tp);
+        NotificationTemplatePreviewResponse expected = new NotificationTemplatePreviewResponse();
+        when(notificationTemplateResponseMapper.notificationPreviewResponse(any(), any(), any()))
+            .thenReturn(expected);
+        NotificationTemplatePreviewResponse resp = notificationServiceImpl.previewNotification(req, map);
+        assertEquals(expected, resp);
     }
 }
