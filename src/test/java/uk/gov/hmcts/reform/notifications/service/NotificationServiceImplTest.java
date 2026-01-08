@@ -242,13 +242,13 @@ public class NotificationServiceImplTest {
         .build();
 
     @BeforeEach
-    void setup() {
+    public void setup() {
         when(postcodeLookupConfiguration.getUrl()).thenReturn("https://api.os.uk/search/places/v1");
         when(postcodeLookupConfiguration.getAccessKey()).thenReturn("dummy");
     }
 
     @Test
-  public void throwNotificationListEmptyExceptionWhenNotificationListIsEmpty() {
+    public void throwNotificationListEmptyExceptionWhenNotificationListIsEmpty() {
         when(notificationRepository.findByReferenceOrderByDateUpdatedDesc(anyString())).thenReturn(Optional.empty());
 
         assertThrows(NotificationListEmptyException.class, () -> notificationServiceImpl
