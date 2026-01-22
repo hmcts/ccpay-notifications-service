@@ -255,7 +255,7 @@ dependencies {
   implementation group: 'org.liquibase', name: 'liquibase-core', version: '5.0.1'
   implementation group: 'org.postgresql', name: 'postgresql', version: '42.7.9'
   implementation group: 'org.projectlombok', name: 'lombok', version: versions.lombok
-  implementation group: 'org.springdoc', name: 'springdoc-openapi-starter-webmvc-ui', version: '2.6.0'
+  implementation group: 'org.springdoc', name: 'springdoc-openapi-starter-webmvc-ui', version: '3.0.1'
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-actuator'
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-aop'
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-data-jpa'
