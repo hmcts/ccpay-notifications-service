@@ -128,7 +128,10 @@ jacocoTestReport {
   }
 }
 
+// Ensure coverage XML is generated before running Sonar tasks
 project.tasks['sonarqube'].dependsOn jacocoTestReport
+// New Sonar task name (sonarqube is deprecated in plugin 6.x)
+tasks.named('sonar') { dependsOn jacocoTestReport }
 
 def sonarExclusions = [
   '**/model/**',
@@ -143,9 +146,8 @@ sonarqube {
     property "sonar.java.coveragePlugin", "jacoco"
     property "sonar.projectName", "Reform :: notifications-service"
     property "sonar.projectKey", "uk.gov.hmcts.reform:notifications-service"
+    property "sonar.organization", "hmcts"
     property "sonar.coverage.jacoco.xmlReportPaths", "${jacocoTestReport.reports.xml.outputLocation}"
-    property "sonar.host.url", "https://sonarcloud.io/"
-    property "sonar.jacoco.reportPaths", "${project.buildDir}/jacoco/test.exec"
     property "sonar.dependencyCheck.reportPath", "${project.buildDir}/reports/dependency-check-report.xml"
     property "sonar.exclusions", sonarExclusions.join(", ")
     property "sonar.test.exclusions", sonarExclusions.join(", ")
@@ -251,7 +253,7 @@ dependencies {
   implementation group: 'org.apache.logging.log4j', name: 'log4j-api', version: versions.log4j
   implementation group: 'org.apache.logging.log4j', name: 'log4j-to-slf4j', version: versions.log4j
   implementation group: 'org.liquibase', name: 'liquibase-core', version: '5.0.1'
-  implementation group: 'org.postgresql', name: 'postgresql', version: '42.7.8'
+  implementation group: 'org.postgresql', name: 'postgresql', version: '42.7.9'
   implementation group: 'org.projectlombok', name: 'lombok', version: versions.lombok
   implementation group: 'org.springdoc', name: 'springdoc-openapi-starter-webmvc-ui', version: '2.6.0'
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-actuator'
@@ -331,4 +333,3 @@ wrapper {
 serenity {
   reports = ["single-page-html"]
 }
-

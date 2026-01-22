@@ -44,4 +44,8 @@ public class DocPreviewRequest {
     @Valid
     private Personalisation personalisation;
 
+    // Template ID to be used for previewing the notification
+    // optional field, if not provided the template will be
+    // determined based on payment channel and payment method.
+    private String templateId;
 }
