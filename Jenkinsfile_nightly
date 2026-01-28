@@ -61,6 +61,8 @@ withNightlyPipeline(type, product, component) {
   }
 
   afterAlways('fullFunctionalTest') {
+    steps.archiveArtifacts allowEmptyArchive: true, artifacts: 'build/reports/tests/functional/**/*'
+    steps.junit allowEmptyResults: true, testResults: 'build/test-results/functional/*.xml'
     steps.archiveArtifacts allowEmptyArchive: true, artifacts: '**/site/serenity/**/*'
     publishHTML target: [
       reportDir            : "target/site/serenity/",

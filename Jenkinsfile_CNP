@@ -68,6 +68,9 @@ withPipeline(type, product, component) {
 
   afterAlways('functionalTest:preview') {
 
+    steps.archiveArtifacts allowEmptyArchive: true, artifacts: 'build/reports/tests/functional/**/*, target/site/serenity/**/*'
+    steps.junit allowEmptyResults: true, testResults: 'build/test-results/functional/*.xml'
+
     publishHTML target: [
       reportDir            : "build/reports/tests/functional",
       allowMissing         : true,
@@ -88,6 +91,9 @@ withPipeline(type, product, component) {
   }
 
   afterAlways('functionalTest:aat') {
+    steps.archiveArtifacts allowEmptyArchive: true, artifacts: 'build/reports/tests/functional/**/*, target/site/serenity/**/*'
+    steps.junit allowEmptyResults: true, testResults: 'build/test-results/functional/*.xml'
+
     publishHTML target: [
       allowMissing         : true,
       alwaysLinkToLastBuild: true,
