@@ -6,10 +6,10 @@ import org.junit.jupiter.api.TestInstance;
 import org.springframework.http.HttpStatus;
 
 import io.restassured.response.Response;
-import net.serenitybdd.junit.spring.integration.SpringIntegrationSerenityRunner;
+import net.serenitybdd.junit5.SerenityJUnit5Extension;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -40,7 +40,7 @@ import java.util.UUID;
 
 @ActiveProfiles({"functional", "liberataMock"})
 @ContextConfiguration(classes = TestContextConfiguration.class)
-@RunWith(SpringIntegrationSerenityRunner.class)
+@ExtendWith(SerenityJUnit5Extension.class)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @SpringBootTest
 public class NotificationsServiceFunctionalTest {
