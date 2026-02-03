@@ -151,7 +151,7 @@ public class NotificationServiceImpl implements NotificationService {
             }
 
             final IdamUserIdResponse uid = idamService.getUserId(headers);
-            LOG.info("Refund reason in sendEmailNotification {}", emailNotificationRequest.getPersonalisation().getRefundReason());
+            LOG.debug("Refund reason in sendEmailNotification {}", emailNotificationRequest.getPersonalisation().getRefundReason());
             String refundReason = getRefundReason(emailNotificationRequest.getPersonalisation().getRefundReason());
             TemplatePreviewDto templatePreviewDto = emailNotificationRequest.getTemplatePreview();
             LOG.info("templatePreviewDto {}",templatePreviewDto);
@@ -458,7 +458,7 @@ public class NotificationServiceImpl implements NotificationService {
         } else {
             reasonCode = refundReasonCode;
         }
-        LOG.info("reasonCode for searching in Notifications Repo >>  {}", reasonCode);
+        LOG.debug("reasonCode for searching in Notifications Repo >>  {}", reasonCode);
         String refundReason;
         Optional<NotificationRefundReasons> notificationRefundReasons = notificationRefundReasonRepository.findByRefundReasonCode(reasonCode);
 
