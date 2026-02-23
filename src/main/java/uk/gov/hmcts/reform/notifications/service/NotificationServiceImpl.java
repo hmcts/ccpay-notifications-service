@@ -101,6 +101,12 @@ public class NotificationServiceImpl implements NotificationService {
 
     private static final Logger LOG = LoggerFactory.getLogger(NotificationServiceImpl.class);
 
+    private static final String POSTAL_ORDER = "postal order";
+
+    private static final String CHEQUE = "cheque";
+
+    private static final String BULK_SCAN = "bulk scan";
+
     private static final String REFUND_WHEN_CONTACTED = "RefundWhenContacted";
 
     private static final String SEND_REFUND = "SendRefund";
@@ -108,6 +114,8 @@ public class NotificationServiceImpl implements NotificationService {
     private static final String EMAIL = "EMAIL";
 
     private static final String LETTER = "LETTER";
+
+    private static final String CASH = "cash";
 
     private static final String STRING = "string";
 
@@ -314,8 +322,9 @@ public class NotificationServiceImpl implements NotificationService {
         LOG.info("Refund reference in previewNotification {}", refundRef);
         String refundReason = getRefundReason(docPreviewRequest.getPersonalisation().getRefundReason());
         LOG.info("Refund reason in previewNotification {}", refundReason);
-        String ccdCaseNumber;
-        instructionType = SEND_REFUND;
+
+        instructionType = getInstructionType(docPreviewRequest.getPaymentChannel(),docPreviewRequest.getPaymentMethod());
+        LOG.info("Instruction Type in previewNotification {}", instructionType);
 
         Optional<ServiceContact> serviceContactOptional = serviceContactRepository.findByServiceName(docPreviewRequest.getServiceName());
         ServiceContact serviceContact = new ServiceContact();
@@ -324,9 +333,15 @@ public class NotificationServiceImpl implements NotificationService {
             serviceContact = serviceContactOptional.get();
         }
 
-        ccdCaseNumber = docPreviewRequest.getPersonalisation().getCcdCaseNumber();
+        String ccdCaseNumber = docPreviewRequest.getPersonalisation().getCcdCaseNumber();
 
         String templateId = getTemplate(docPreviewRequest, instructionType);
+        if (docPreviewRequest.getTemplateId() != null && !docPreviewRequest.getTemplateId().isEmpty()) {
+            LOG.info("Using templateId from request {}", docPreviewRequest.getTemplateId());
+            templateId = docPreviewRequest.getTemplateId();
+        }
+        LOG.info("Template Id in previewNotification {}", templateId);
+
         try {
             if (EMAIL.equalsIgnoreCase(docPreviewRequest.getNotificationType().name())) {
                 templatePreview = notificationEmailClient
@@ -350,8 +365,8 @@ public class NotificationServiceImpl implements NotificationService {
             }
 
             notificationTemplatePreviewResponse = notificationTemplateResponseMapper.notificationPreviewResponse(templatePreview,
-                                                                                                             docPreviewRequest,
-                                                                                                             serviceContact);
+                                                                                                                 docPreviewRequest,
+                                                                                                                 serviceContact);
         } catch (NotificationClientException exception) {
             LOG.error("NotificationServiceImpl.previewNotification() : {}", exception);
             GovNotifyExceptionWrapper exceptionWrapper = new GovNotifyExceptionWrapper();
@@ -419,6 +434,19 @@ public class NotificationServiceImpl implements NotificationService {
             .html(html)
             .from(notificationTemplateResponseMapper.toFromMapper(notificationType, serviceContact))
             .build();
+    }
+
+    private String getInstructionType(String paymentChannel, String paymentMethod) {
+
+        String instructionType;
+        if (BULK_SCAN.equals(paymentChannel) && (CASH.equals(paymentMethod)
+            || POSTAL_ORDER.equals(paymentMethod) || CHEQUE.equals(paymentMethod))) {
+            instructionType = REFUND_WHEN_CONTACTED;
+        } else {
+            instructionType = SEND_REFUND;
+        }
+
+        return instructionType;
     }
 
     private String getRefundReason(String refundReasonCode) {
