@@ -294,9 +294,10 @@ public class NotificationServiceImpl implements NotificationService {
     }
 
     @Override
-    public NotificationResponseDto getNotification(String reference) {
+    public NotificationResponseDto getNotification(String reference, MultiValueMap<String, String> headers) {
         Optional<List<Notification>> notificationList;
-        notificationList = notificationRepository.findByReferenceOrderByDateUpdatedDesc(reference);
+        String userId = idamService.getUserId(headers).getUid();
+        notificationList = notificationRepository.findByReferenceAndCreatedByOrderByDateUpdatedDesc(reference, userId);
         LOG.info("Notification List retrieved in getNotification {}",notificationList);
         if (notificationList.isPresent() && !notificationList.get().isEmpty()) {
 
@@ -378,8 +379,9 @@ public class NotificationServiceImpl implements NotificationService {
 
     @Override
     @Transactional
-    public void deleteNotification(String reference) {
-        long records = notificationRepository.deleteByReference(reference);
+    public void deleteNotification(String reference, MultiValueMap<String, String> headers) {
+        String userId = idamService.getUserId(headers).getUid();
+        long records = notificationRepository.deleteByReferenceAndCreatedBy(reference, userId);
         LOG.info("records After deletion {}",records);
         if (records == 0) {
             throw new NotificationNotFoundException("No records found for given refund reference");

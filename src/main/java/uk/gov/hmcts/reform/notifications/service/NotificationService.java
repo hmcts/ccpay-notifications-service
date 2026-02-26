@@ -16,11 +16,11 @@ public interface NotificationService {
 
     SendLetterResponse sendLetterNotification(RefundNotificationLetterRequest letterNotificationRequest, MultiValueMap<String, String> headers);
 
-    NotificationResponseDto getNotification(String reference);
+    NotificationResponseDto getNotification(String reference, MultiValueMap<String, String> headers);
 
     NotificationTemplatePreviewResponse previewNotification(DocPreviewRequest docPreviewRequest, MultiValueMap<String, String> headers);
 
     PostCodeResponse getAddress(String postCode);
 
-    void deleteNotification(String reference);
+    void deleteNotification(String reference, MultiValueMap<String, String> headers);
 }

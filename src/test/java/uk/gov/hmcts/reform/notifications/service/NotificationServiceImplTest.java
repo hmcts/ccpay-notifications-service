@@ -69,6 +69,7 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Supplier;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -245,23 +246,28 @@ public class NotificationServiceImplTest {
     public void setup() {
         when(postcodeLookupConfiguration.getUrl()).thenReturn("https://api.os.uk/search/places/v1");
         when(postcodeLookupConfiguration.getAccessKey()).thenReturn("dummy");
+        when(idamService.getUserId(any())).thenReturn(idamUserIDResponseSupplier.get());
     }
 
     @Test
     public void throwNotificationListEmptyExceptionWhenNotificationListIsEmpty() {
-        when(notificationRepository.findByReferenceOrderByDateUpdatedDesc(anyString())).thenReturn(Optional.empty());
+        when(notificationRepository.findByReferenceAndCreatedByOrderByDateUpdatedDesc(anyString(),
+                                                                                     anyString()))
+            .thenReturn(Optional.empty());
 
         assertThrows(NotificationListEmptyException.class, () -> notificationServiceImpl
-            .getNotification(null));
+            .getNotification(null, map));
     }
 
     @Test
     public void testNotificationListForLetterNotificationForGivenRefundReference() {
 
-        when(notificationRepository.findByReferenceOrderByDateUpdatedDesc(anyString())).thenReturn(Optional.ofNullable(List.of(
-            letterNotificationListSupplierBasedOnRefundRef.get())));
+        when(notificationRepository.findByReferenceAndCreatedByOrderByDateUpdatedDesc(anyString(),
+                                                                                     anyString()))
+            .thenReturn(Optional.ofNullable(List.of(
+                letterNotificationListSupplierBasedOnRefundRef.get())));
 
-        NotificationResponseDto notificationListDtoResponse = notificationServiceImpl.getNotification("Notify-123");
+        NotificationResponseDto notificationListDtoResponse = notificationServiceImpl.getNotification("Notify-123", map);
 
         assertNotNull(notificationListDtoResponse);
         assertEquals(1, notificationListDtoResponse.getNotifications().size());
@@ -273,12 +279,15 @@ public class NotificationServiceImplTest {
     @Test
    public  void givenEmptyNotificationList_whenGetNotification_thenNotificationListEmptyExceptionIsReceived() {
 
-        when(notificationRepository.findByReferenceOrderByDateUpdatedDesc(anyString())).thenReturn(Optional.empty());
+        when(notificationRepository.findByReferenceAndCreatedByOrderByDateUpdatedDesc(anyString(),
+                                                                                     anyString()))
+            .thenReturn(Optional.empty());
 
         Exception exception = assertThrows(
             NotificationListEmptyException.class,
             () -> notificationServiceImpl.getNotification(
-                null
+                null,
+                map
             )
         );
         String actualMessage = exception.getMessage();
@@ -288,10 +297,12 @@ public class NotificationServiceImplTest {
     @Test
     void testNotificationListForEmailNotificationForGivenRefundReference() {
 
-        when(notificationRepository.findByReferenceOrderByDateUpdatedDesc(anyString())).thenReturn(Optional.ofNullable(List.of(
-            emailNotificationListSupplierBasedOnRefundRef.get())));
+        when(notificationRepository.findByReferenceAndCreatedByOrderByDateUpdatedDesc(anyString(),
+                                                                                     anyString()))
+            .thenReturn(Optional.ofNullable(List.of(
+                emailNotificationListSupplierBasedOnRefundRef.get())));
 
-        NotificationResponseDto notificationListDtoResponse = notificationServiceImpl.getNotification("Notify-124");
+        NotificationResponseDto notificationListDtoResponse = notificationServiceImpl.getNotification("Notify-124", map);
 
         assertNotNull(notificationListDtoResponse);
         assertEquals(1, notificationListDtoResponse.getNotifications().size());
@@ -1017,16 +1028,15 @@ public class NotificationServiceImplTest {
 
     @Test
     void testDeleteNotificationDeletesRecordsWhenFound() {
-        when(notificationRepository.deleteByReference(eq("RF-123"))).thenReturn(2L);
-        notificationServiceImpl.deleteNotification("RF-123");
-        // No exception means success; repository call verified by stubbing
+        when(notificationRepository.deleteByReferenceAndCreatedBy(eq("RF-123"), anyString())).thenReturn(2L);
+        assertDoesNotThrow(() -> notificationServiceImpl.deleteNotification("RF-123", map));
     }
 
     @Test
     void testDeleteNotificationThrowsWhenNoRecordsFound() {
-        when(notificationRepository.deleteByReference(eq("RF-999"))).thenReturn(0L);
+        when(notificationRepository.deleteByReferenceAndCreatedBy(eq("RF-999"), anyString())).thenReturn(0L);
         assertThrows(uk.gov.hmcts.reform.notifications.exceptions.NotificationNotFoundException.class,
-            () -> notificationServiceImpl.deleteNotification("RF-999"));
+            () -> notificationServiceImpl.deleteNotification("RF-999", map));
     }
 
     @Test

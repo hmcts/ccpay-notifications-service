@@ -11,9 +11,10 @@ import java.util.Optional;
 @Repository
 public interface NotificationRepository extends CrudRepository<Notification, Integer> {
 
-    Optional<List<Notification>> findByReferenceOrderByDateUpdatedDesc(String reference);
+    Optional<List<Notification>> findByReferenceAndCreatedByOrderByDateUpdatedDesc(String reference,
+                                                                                   String createdBy);
 
-    long deleteByReference(String reference);
+    long deleteByReferenceAndCreatedBy(String reference, String createdBy);
 
     @Query("select n from Notification n "
         + "where n.reference = ?1  AND n.notificationType = ?2 order by n.dateUpdated desc")

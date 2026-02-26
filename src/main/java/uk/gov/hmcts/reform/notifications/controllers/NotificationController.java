@@ -90,7 +90,7 @@ public class NotificationController {
         @PathVariable("reference") String reference) {
         log.info("Notification reference in GET endpoint /notifications/{reference} {}", reference);
         return new ResponseEntity<>(
-            notificationService.getNotification(reference),
+            notificationService.getNotification(reference, headers),
             HttpStatus.OK
         );
     }
@@ -131,10 +131,11 @@ public class NotificationController {
 
     @DeleteMapping("/notifications/{reference}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteNotification(@RequestHeader("Authorization") String authorization, @PathVariable String reference) {
-        notificationService.deleteNotification(reference);
+    public void deleteNotification(@RequestHeader("Authorization") String authorization,
+                                   @RequestHeader(required = false) MultiValueMap<String, String> headers,
+                                   @PathVariable String reference) {
+        notificationService.deleteNotification(reference, headers);
         log.info("Deleted records >>  {}",reference);
     }
 
 }
-

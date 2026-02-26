@@ -1159,7 +1159,7 @@ public class NotificationControllerTest {
 
         //mock userinfo call
         mockUserinfoCall(idamUserIDResponseSupplier.get());
-        when(notificationRepository.findByReferenceOrderByDateUpdatedDesc(any()))
+        when(notificationRepository.findByReferenceAndCreatedByOrderByDateUpdatedDesc(any(), any()))
             .thenReturn(Optional.of(List.of(
                 NotificationServiceImplTest.letterNotificationListSupplierBasedOnRefundRef.get())));
 
@@ -1180,8 +1180,7 @@ public class NotificationControllerTest {
 
         //mock userinfo call
         mockUserinfoCall(idamUserIDResponseSupplier.get());
-        when(notificationRepository.findByReferenceOrderByDateUpdatedDesc(any()
-        ))
+        when(notificationRepository.findByReferenceAndCreatedByOrderByDateUpdatedDesc(any(), any()))
             .thenReturn(Optional.of(List.of(
                 NotificationServiceImplTest.emailNotificationListSupplierBasedOnRefundRef.get())));
 
@@ -1203,7 +1202,8 @@ public class NotificationControllerTest {
         //mock userinfo call
         mockUserinfoCall(idamUserIDResponseSupplier.get());
         Optional<List<Notification>> notificationList = Optional.empty();
-        when(notificationRepository.findByReferenceOrderByDateUpdatedDesc(any())).thenReturn(notificationList);
+        when(notificationRepository.findByReferenceAndCreatedByOrderByDateUpdatedDesc(any(), any()))
+            .thenReturn(notificationList);
 
         MvcResult mvcResult = mockMvc.perform(get("/notifications/RF-124")
                                                   .header("Authorization", "user")
