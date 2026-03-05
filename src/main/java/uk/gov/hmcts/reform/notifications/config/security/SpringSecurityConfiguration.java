@@ -67,8 +67,6 @@ public class SpringSecurityConfiguration {
             .formLogin(AbstractHttpConfigurer::disable)
             .logout(AbstractHttpConfigurer::disable)
             .authorizeHttpRequests(authorize -> authorize
-                .requestMatchers(HttpMethod.GET, "/notifications/**").hasAuthority(AUTHORISED_REFUNDS_ROLE)
-                .requestMatchers(HttpMethod.DELETE, "/notifications/**").hasAuthority(PAYMENTS_ROLE)
                 .anyRequest().permitAll()
             );
 
