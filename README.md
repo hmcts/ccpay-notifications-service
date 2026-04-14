@@ -11,13 +11,13 @@ simply use this one as a starting point and build on top of it.
 ## What's inside
 
 The template is a working application with a minimal setup. It contains:
- * application skeleton
- * setup script to prepare project
- * common plugins and libraries
- * docker setup
+ * application skeleton.
+ * setup script to prepare project.
+ * common plugins and libraries.
+ * docker setup.
  * swagger configuration for api documentation ([see how to publish your api documentation to shared repository](https://github.com/hmcts/reform-api-docs#publish-swagger-docs))
- * code quality tools already set up
- * MIT license and contribution information
+ * code quality tools already set up.
+ * MIT license and contribution information.
  * Helm chart using chart-java.
 
 The application exposes health endpoint (http://localhost:4550/health) and metrics endpoint
