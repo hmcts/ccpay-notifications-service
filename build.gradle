@@ -189,6 +189,7 @@ dependencyCheck {
 dependencyManagement {
   imports {
     mavenBom 'org.springframework.cloud:spring-cloud-dependencies:2023.0.6'
+    mavenBom 'org.testcontainers:testcontainers-bom:1.21.4'
   }
   dependencies {
     // CVE-2023-3635
@@ -278,7 +279,7 @@ dependencies {
 
   testImplementation group :'org.projectlombok', name:'lombok', version: versions.lombok
   testAnnotationProcessor group :'org.projectlombok', name:'lombok', version: versions.lombok
-  testImplementation group: 'org.testcontainers', name: 'postgresql', version: '1.21.4'
+  testImplementation group: 'org.testcontainers', name: 'postgresql'
 
   integrationTestImplementation sourceSets.main.runtimeClasspath
   integrationTestImplementation sourceSets.test.runtimeClasspath
