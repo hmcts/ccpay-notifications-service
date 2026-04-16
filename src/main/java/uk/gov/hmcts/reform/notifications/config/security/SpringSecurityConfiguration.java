@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -33,6 +34,9 @@ public class SpringSecurityConfiguration {
 
     private final ServiceAuthFilter serviceAuthFilter;
     private final JwtAuthenticationConverter jwtAuthenticationConverter;
+
+    private static final String PAYMENTS_ROLE = "payments";
+    private static final String AUTHORISED_REFUNDS_ROLE = "payments-refund";
 
     public SpringSecurityConfiguration(final JwtGrantedAuthoritiesConverter jwtGrantedAuthoritiesConverter,
                                        final ServiceAuthFilter serviceAuthFilter
@@ -80,6 +84,8 @@ public class SpringSecurityConfiguration {
             .logout(AbstractHttpConfigurer::disable)
             .authorizeHttpRequests(authorize -> authorize
                 .requestMatchers("/error").permitAll()
+                .requestMatchers(HttpMethod.GET, "/notifications/**").hasAuthority(AUTHORISED_REFUNDS_ROLE)
+                .requestMatchers(HttpMethod.DELETE, "/notifications/**").hasAuthority(PAYMENTS_ROLE)
                 .anyRequest().authenticated()
             )
             .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthenticationConverter)))

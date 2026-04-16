@@ -91,6 +91,8 @@ public class NotificationsServiceFunctionalTest {
     private boolean isTokensInitialized;
 
     private static final String CCD_CASE_NUMBER = "1234567890123456";
+    private static final String ROLE_PAYMENTS = "payments";
+    private static final String ROLE_PAYMENTS_REFUND = "payments-refund";
 
     private static final String CITY = "London";
 
@@ -100,8 +102,11 @@ public class NotificationsServiceFunctionalTest {
     public void setUp() {
 
         if (!isTokensInitialized) {
-            userTokenPaymentRefundApprover = idamService.createUserWithSearchScope
-                ("idam.user.ccpayrefundsapi@hmcts.net").getAuthorisationToken();
+            userTokenPaymentRefundApprover = idamService.createUserWithSearchScope(
+                "idam.user.ccpayrefundsapi@hmcts.net",
+                ROLE_PAYMENTS_REFUND,
+                ROLE_PAYMENTS
+            ).getAuthorisationToken();
             serviceTokenPayBubble =
                 s2sTokenService.getS2sToken("ccpay_bubble", testConfigProperties.s2sPayBubble);
 
