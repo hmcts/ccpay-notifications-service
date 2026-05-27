@@ -19,6 +19,7 @@ import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.oauth2.server.resource.web.authentication.BearerTokenAuthenticationFilter;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.authorization.AuthorityAuthorizationManager;
 import uk.gov.hmcts.reform.authorisation.filters.ServiceAuthFilter;
 import uk.gov.hmcts.reform.notifications.config.security.converter.JwtGrantedAuthoritiesConverter;
 
@@ -37,6 +38,7 @@ public class SpringSecurityConfiguration {
 
     private static final String PAYMENTS_ROLE = "payments";
     private static final String AUTHORISED_REFUNDS_ROLE = "payments-refund";
+    private static final String AUTHORISED_REFUND_APPROVER ="payments-refund-approver";
 
     public SpringSecurityConfiguration(final JwtGrantedAuthoritiesConverter jwtGrantedAuthoritiesConverter,
                                        final ServiceAuthFilter serviceAuthFilter
@@ -85,6 +87,10 @@ public class SpringSecurityConfiguration {
             .authorizeHttpRequests(authorize -> authorize
                 .requestMatchers("/error").permitAll()
                 .requestMatchers(HttpMethod.GET, "/notifications/**").hasAuthority(AUTHORISED_REFUNDS_ROLE)
+                .requestMatchers(HttpMethod.GET, "/notifications/**")
+                .access((authentication, context) -> AuthorityAuthorizationManager
+                    .hasAnyAuthority(AUTHORISED_REFUNDS_ROLE, AUTHORISED_REFUND_APPROVER)
+                    .check(authentication, context.getRequest()))
                 .requestMatchers(HttpMethod.DELETE, "/notifications/**").hasAuthority(PAYMENTS_ROLE)
                 .anyRequest().authenticated()
             )
