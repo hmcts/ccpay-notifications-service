@@ -86,7 +86,6 @@ public class SpringSecurityConfiguration {
             .logout(AbstractHttpConfigurer::disable)
             .authorizeHttpRequests(authorize -> authorize
                 .requestMatchers("/error").permitAll()
-                .requestMatchers(HttpMethod.GET, "/notifications/**").hasAuthority(AUTHORISED_REFUNDS_ROLE)
                 .requestMatchers(HttpMethod.GET, "/notifications/**")
                 .access((authentication, context) -> AuthorityAuthorizationManager
                     .hasAnyAuthority(AUTHORISED_REFUNDS_ROLE, AUTHORISED_REFUND_APPROVER)
