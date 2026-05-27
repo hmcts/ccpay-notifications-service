@@ -13,7 +13,6 @@ import uk.gov.hmcts.reform.idam.client.models.test.CreateUserRequest;
 import uk.gov.hmcts.reform.idam.client.models.test.UserGroup;
 import uk.gov.hmcts.reform.idam.client.models.test.UserRole;
 
-import java.util.Base64;
 import java.util.UUID;
 import java.util.stream.Stream;
 
@@ -47,7 +46,7 @@ public class IdamService {
 
     public ValidUser createUserWith(String userGroup, String... roles) {
         String email = nextUserEmail();
-        CreateUserRequest userRequest = userRequest(email, userGroup, roles);
+        CreateUserRequest userRequest = userRequest(email, roles);
         try {
             idamApi.createUser(userRequest);
         } catch (Exception ex) {
@@ -59,9 +58,9 @@ public class IdamService {
         return new ValidUser(email, accessToken);
     }
 
-    public ValidUser createUserWithSearchScope(String userGroup, String... roles) {
+    public ValidUser createUserWithSearchScope(String... roles) {
         String email = nextUserEmail();
-        CreateUserRequest userRequest = userRequest(email, userGroup, roles);
+        CreateUserRequest userRequest = userRequest(email, roles);
         try {
             idamApi.createUser(userRequest);
         } catch (Exception ex) {
@@ -110,14 +109,13 @@ public class IdamService {
         return null;
     }
 
-    private CreateUserRequest userRequest(String email, String userGroup, String... roles) {
+    private CreateUserRequest userRequest(String email, String... roles) {
         return CreateUserRequest.builder()
             .email(email)
             .password(testConfig.getTestUserPassword())
             .roles(Stream.of(roles)
                        .map(UserRole::new)
                        .collect(toList()))
-            .userGroup(new UserGroup(userGroup))
             .build();
     }
 

@@ -86,14 +86,16 @@ public class NotificationsServiceFunctionalTest {
 
     private String serviceTokenPayBubble;
 
+    private String userTokenPayments;
+    private String userTokenPaymentRefundRequester;
     private String userTokenPaymentRefundApprover;
 
     private boolean isTokensInitialized;
 
     private static final String CCD_CASE_NUMBER = "1234567890123456";
     private static final String ROLE_PAYMENTS = "payments";
-    private static final String ROLE_PAYMENTS_REFUND = "payments-refund";
-
+    private static final String ROLE_PAYMENTS_REFUND_REQUESTER = "payments-refund";
+    private static final String ROLE_PAYMENTS_REFUND_APPROVER = "payments-refund-approver";
     private static final String CITY = "London";
 
     private static final String COUNTY = "London";
@@ -102,9 +104,16 @@ public class NotificationsServiceFunctionalTest {
     public void setUp() {
 
         if (!isTokensInitialized) {
+            userTokenPayments = idamService.createUserWithSearchScope(
+                ROLE_PAYMENTS,
+                ROLE_PAYMENTS
+            ).getAuthorisationToken();
+            userTokenPaymentRefundRequester = idamService.createUserWithSearchScope(
+                ROLE_PAYMENTS_REFUND_REQUESTER,
+                ROLE_PAYMENTS
+            ).getAuthorisationToken();
             userTokenPaymentRefundApprover = idamService.createUserWithSearchScope(
-                "idam.user.ccpayrefundsapi@hmcts.net",
-                ROLE_PAYMENTS_REFUND,
+                ROLE_PAYMENTS_REFUND_APPROVER,
                 ROLE_PAYMENTS
             ).getAuthorisationToken();
             serviceTokenPayBubble =
@@ -144,7 +153,7 @@ public class NotificationsServiceFunctionalTest {
     public void sendEmailNotificationRequestWithReasonUnableToApplyRefundToCard() {
 
         String reference = "FunctionalTest1";
-     //   sendEmailNotificationRequest();
+        //   sendEmailNotificationRequest();
         RefundNotificationEmailRequest refundNotificationEmailRequest = RefundNotificationEmailRequest.refundNotificationEmailRequestWith()
             .templateId(emailTemplateId)
             .recipientEmailAddress("vat12@mailinator.com")
@@ -257,7 +266,46 @@ public class NotificationsServiceFunctionalTest {
     }
 
     @Test
-    public void getDetailsForSentEmailNotification(){
+    public void getDetailsForSentEmailNotificationByRefundRequester(){
+
+        String reference = "RF-1234-" + RandomUtils.nextInt();
+        RefundNotificationEmailRequest refundNotificationEmailRequest = RefundNotificationEmailRequest.refundNotificationEmailRequestWith()
+            .templateId(emailTemplateId)
+            .recipientEmailAddress("vat12@mailinator.com")
+            .reference(reference)
+            .emailReplyToId(emailReplyToId)
+            .notificationType(NotificationType.EMAIL)
+            .serviceName("Probate")
+            .personalisation(Personalisation.personalisationRequestWith().ccdCaseNumber(CCD_CASE_NUMBER).refundReference(reference).refundAmount(
+                BigDecimal.valueOf(10)).refundReason("RR001").customerReference("SM365623/T8028839").build())
+
+            .build();
+
+        final Response responseNotificationEmail = notificationsTestService.postEmailNotification(
+            userTokenPaymentRefundRequester ,
+            serviceTokenPayBubble ,
+            testConfigProperties.baseTestUrl ,
+            refundNotificationEmailRequest
+        );
+        assertThat(responseNotificationEmail.getStatusCode()).isEqualTo(HttpStatus.CREATED.value());
+
+        final Response responseNotification = notificationsTestService.getNotification(
+            userTokenPaymentRefundRequester ,
+            serviceTokenPayBubble ,
+            testConfigProperties.baseTestUrl ,
+            reference
+        );
+
+        assertThat(responseNotification.getStatusCode()).isEqualTo(HttpStatus.OK.value());
+
+        List<Map<String,String>> getNotificationsResponse =  responseNotification.getBody().jsonPath().getList("notifications");
+        assertThat(getNotificationsResponse.size()).isGreaterThanOrEqualTo(1);
+
+        deleteNotifications(reference);
+    }
+
+    @Test
+    public void getDetailsForSentEmailNotificationByRefundApprover(){
 
         String reference = "RF-1234-" + RandomUtils.nextInt();
         RefundNotificationEmailRequest refundNotificationEmailRequest = RefundNotificationEmailRequest.refundNotificationEmailRequestWith()
@@ -296,6 +344,42 @@ public class NotificationsServiceFunctionalTest {
     }
 
     @Test
+    public void negativeGetDetailsForSentEmailNotificationByNonRefundRoleUser(){
+
+        String reference = "RF-1234-" + RandomUtils.nextInt();
+        RefundNotificationEmailRequest refundNotificationEmailRequest = RefundNotificationEmailRequest.refundNotificationEmailRequestWith()
+            .templateId(emailTemplateId)
+            .recipientEmailAddress("vat12@mailinator.com")
+            .reference(reference)
+            .emailReplyToId(emailReplyToId)
+            .notificationType(NotificationType.EMAIL)
+            .serviceName("Probate")
+            .personalisation(Personalisation.personalisationRequestWith().ccdCaseNumber(CCD_CASE_NUMBER).refundReference(reference).refundAmount(
+                BigDecimal.valueOf(10)).refundReason("RR001").customerReference("SM365623/T8028839").build())
+
+            .build();
+
+        final Response responseNotificationEmail = notificationsTestService.postEmailNotification(
+            userTokenPaymentRefundApprover ,
+            serviceTokenPayBubble ,
+            testConfigProperties.baseTestUrl ,
+            refundNotificationEmailRequest
+        );
+        assertThat(responseNotificationEmail.getStatusCode()).isEqualTo(HttpStatus.CREATED.value());
+
+        final Response responseNotification = notificationsTestService.getNotification(
+            userTokenPayments ,
+            serviceTokenPayBubble ,
+            testConfigProperties.baseTestUrl ,
+            reference
+        );
+
+        assertThat(responseNotification.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN.value());
+
+        deleteNotifications(reference);
+    }
+
+    @Test
     public void getNotificationDetailsForEmptyReference() {
         final Response responseNotification = notificationsTestService.getNotification(
             userTokenPaymentRefundApprover,
@@ -316,7 +400,7 @@ public class NotificationsServiceFunctionalTest {
             .serviceName("Probate")
             .personalisation(
                 Personalisation.personalisationRequestWith().ccdCaseNumber(CCD_CASE_NUMBER).refundAmount(
-                    BigDecimal.valueOf(10)).refundReason("RR001").refundReference("RF-1234-1234-1234-1234")
+                        BigDecimal.valueOf(10)).refundReason("RR001").refundReference("RF-1234-1234-1234-1234")
                     .customerReference("SM365623/T8028839").build())
             .paymentChannel("telephony")
             .paymentMethod("card")
@@ -345,7 +429,7 @@ public class NotificationsServiceFunctionalTest {
             .serviceName("Probate")
             .personalisation(
                 Personalisation.personalisationRequestWith().ccdCaseNumber(CCD_CASE_NUMBER).refundAmount(
-                    BigDecimal.valueOf(10)).refundReason("RR001").refundReference("RF-1234-1234-1234-1234")
+                        BigDecimal.valueOf(10)).refundReason("RR001").refundReference("RF-1234-1234-1234-1234")
                     .customerReference("SM365623/T8028839").build())
             .paymentChannel("bull scan")
             .paymentMethod("cash")
@@ -374,7 +458,7 @@ public class NotificationsServiceFunctionalTest {
             .serviceName("Probate")
             .personalisation(
                 Personalisation.personalisationRequestWith().ccdCaseNumber(CCD_CASE_NUMBER).refundAmount(
-                    BigDecimal.valueOf(10)).refundReason("RR001").refundReference("RF-1234-1234-1234-1234")
+                        BigDecimal.valueOf(10)).refundReason("RR001").refundReference("RF-1234-1234-1234-1234")
                     .customerReference("SM365623/T8028839").build())
             .paymentChannel("online")
             .paymentMethod("card")
@@ -401,7 +485,7 @@ public class NotificationsServiceFunctionalTest {
             .serviceName("Probate")
             .personalisation(
                 Personalisation.personalisationRequestWith().ccdCaseNumber(CCD_CASE_NUMBER).refundAmount(
-                    BigDecimal.valueOf(10)).refundReason("RR001").refundReference("RF-1234-1234-1234-1234")
+                        BigDecimal.valueOf(10)).refundReason("RR001").refundReference("RF-1234-1234-1234-1234")
                     .customerReference("SM365623/T8028839").build())
             .paymentChannel("bulk scan")
             .paymentMethod("cash")
@@ -813,7 +897,7 @@ public class NotificationsServiceFunctionalTest {
             .serviceName("Probate")
             .personalisation(
                 Personalisation.personalisationRequestWith().ccdCaseNumber(CCD_CASE_NUMBER).refundAmount(
-                    BigDecimal.valueOf(10)).refundReason("RR001").refundReference("RF-1234-1234-1234-1234")
+                        BigDecimal.valueOf(10)).refundReason("RR001").refundReference("RF-1234-1234-1234-1234")
                     .customerReference("SM365623/T8028839").build())
             .paymentChannel("online")
             .paymentMethod("card")
@@ -840,7 +924,7 @@ public class NotificationsServiceFunctionalTest {
             .serviceName("Probate")
             .personalisation(
                 Personalisation.personalisationRequestWith().ccdCaseNumber(CCD_CASE_NUMBER).refundAmount(
-                    BigDecimal.valueOf(10)).refundReason("RR003")
+                        BigDecimal.valueOf(10)).refundReason("RR003")
                     .refundReference("RF-1234-1234-1234-1234").customerReference("SM365623/T8028839").build())
             .paymentChannel("telephony")
             .paymentMethod("card")
