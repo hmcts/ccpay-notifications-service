@@ -49,6 +49,8 @@ public class TestConfigProperties {
     @Value("${idam.paybubble.client.secret}")
     public String idamPayBubbleClientSecret;
 
+    @Value("${idam.paybubble.redirect.uri}")
+    public String idamPayBubbleRedirectUri;
 
 }
 

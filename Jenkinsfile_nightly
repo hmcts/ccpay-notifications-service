@@ -4,7 +4,13 @@ properties([
   // H allow predefined but random minute see https://en.wikipedia.org/wiki/Cron#Non-standard_characters
   pipelineTriggers([cron('H 8 * * 1-5')]),
   parameters([
+    string(name: 'ENVIRONMENT', defaultValue: 'aat', description: 'Environment to fetch the keyvault secrets from'),
     string(name: 'URL_TO_TEST', defaultValue: 'http://ccpay-notifications-service-aat.service.core-compute-aat.internal', description: 'The URL you want to run these tests against'),
+    string(name: 'IDAM_API_URL', defaultValue: 'https://idam-api.aat.platform.hmcts.net', description: 'The Idam url you want to run these tests against'),
+    string(name: 'S2S_URL', defaultValue: 'http://rpe-service-auth-provider-aat.service.core-compute-aat.internal', description: 'The s2s url you want to run these tests against'),
+    string(name: 'OAUTH2_REDIRECT_URI', defaultValue: 'http://ccpay-refunds-api-aat.service.core-compute-aat.internal/oauth2/callback', description: 'The refund redirect url you want to authenticate users and get idam token'),
+    string(name: 'IDAM_PAYBUBBLE_REDIRECT_URI', defaultValue: 'https://paybubble.aat.platform.hmcts.net/oauth2/callback', description: 'The paybubble redirect url you want to authenticate users and get idam token'),
+
     string(name: 'SecurityRules',
       defaultValue: 'http://raw.githubusercontent.com/hmcts/security-test-rules/master/conf/security-rules.conf',
       description: 'SecurityUrl against which rules will be executed'),
@@ -18,7 +24,7 @@ def product = "ccpay"
 def component = "notifications-service"
 
 def secrets = [
-  'ccpay-${env}': [
+  "ccpay-${params.ENVIRONMENT}": [
     secret('refunds-api-client-secret', 'REFUND_SERVICE_ACCOUNT_CLIENT_SECRET'),
     secret('refunds-api-user-password', 'REFUND_SERVICE_ACCOUNT_PASSWORD'),
     secret('notifications-s2s-secret', 'OIDC_S2S_SECRET'),
@@ -50,6 +56,10 @@ static LinkedHashMap<String, Object> secret(String secretName, String envVar) {
 withNightlyPipeline(type, product, component) {
 
   env.TEST_URL = params.URL_TO_TEST
+  env.IDAM_API_URL = params.IDAM_API_URL
+  env.S2S_URL = params.S2S_URL
+  env.OAUTH2_REDIRECT_URI = params.OAUTH2_REDIRECT_URI
+  env.IDAM_PAYBUBBLE_REDIRECT_URI = params.IDAM_PAYBUBBLE_REDIRECT_URI
   loadVaultSecrets(secrets)
   enableSecurityScan()
   enableMutationTest()

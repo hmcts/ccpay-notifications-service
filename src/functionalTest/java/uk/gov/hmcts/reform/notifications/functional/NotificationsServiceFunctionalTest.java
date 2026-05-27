@@ -105,7 +105,6 @@ public class NotificationsServiceFunctionalTest {
 
         if (!isTokensInitialized) {
             userTokenPayments = idamService.createUserWithSearchScope(
-                ROLE_PAYMENTS,
                 ROLE_PAYMENTS
             ).getAuthorisationToken();
             userTokenPaymentRefundRequester = idamService.createUserWithSearchScope(

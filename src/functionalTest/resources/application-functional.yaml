@@ -68,9 +68,11 @@ idam:
     client:
       id: ${IDAM_PAYBUBBLE_CLIENT_ID:paybubble}
       secret: ${IDAM_PAYBUBBLE_CLIENT_SECRET}
+    redirect:
+      uri: ${IDAM_PAYBUBBLE_REDIRECT_URI:https://paybubble.aat.platform.hmcts.net/oauth2/callback}
 oauth2:
   redirect:
-    uri: ${OAUTH2_REDIRECT_URI:https://moneyclaims.aat.platform.hmcts.net}
+    uri: ${OAUTH2_REDIRECT_URI:http://ccpay-refunds-api-aat.service.core-compute-aat.internal/oauth2/callback}
   client:
     id: ${REFUND_SERVICE_ACCOUNT_CLIENT_ID:refunds_api}
     secret: ${REFUND_SERVICE_ACCOUNT_CLIENT_SECRET}

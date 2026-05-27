@@ -20,14 +20,7 @@ import static java.util.stream.Collectors.toList;
 
 @Service
 public class IdamService {
-    public static final String CMC_CITIZEN_GROUP = "cmc-private-beta";
-    public static final String CMC_CASE_WORKER_GROUP = "caseworker";
-    public static final String REFUNDS_USER = "caseworker";
-
     public static final String BEARER = "Bearer ";
-    public static final String AUTHORIZATION_CODE = "authorization_code";
-    public static final String CODE = "code";
-    public static final String BASIC = "Basic ";
     public static final String GRANT_TYPE = "password";
     public static final String SCOPES = "openid profile roles";
     public static final String SCOPES_SEARCH_USER = "openid profile roles search-user";
@@ -44,7 +37,7 @@ public class IdamService {
             .target(IdamApi.class, testConfig.getIdamApiUrl());
     }
 
-    public ValidUser createUserWith(String userGroup, String... roles) {
+    public ValidUser createUserWith(String... roles) {
         String email = nextUserEmail();
         CreateUserRequest userRequest = userRequest(email, roles);
         try {
@@ -73,7 +66,6 @@ public class IdamService {
     }
 
     public String authenticateUser(String username, String password) {
-        String authorisation = username + ":" + password;
         try {
             TokenExchangeResponse tokenExchangeResponse = idamApi.exchangeCode(username,
                                                                                password,
@@ -91,7 +83,6 @@ public class IdamService {
     }
 
     public String authenticateUserWithSearchScope(String username, String password) {
-        String authorisation = username + ":" + password;
         try {
             TokenExchangeResponse tokenExchangeResponse = idamApi.exchangeCode(username,
                                                                                password,
@@ -99,7 +90,7 @@ public class IdamService {
                                                                                GRANT_TYPE,
                                                                                testConfig.getIdamPayBubbleClientID(),
                                                                                testConfig.getIdamPayBubbleClientSecret(),
-                                                                               testConfig.getOauth2().getRedirectUrl());
+                                                                               testConfig.getIdamPayBubbleRedirectUri());
 
             return BEARER + tokenExchangeResponse.getAccessToken();
         } catch (Exception ex) {
@@ -117,12 +108,6 @@ public class IdamService {
                        .map(UserRole::new)
                        .collect(toList()))
             .build();
-    }
-
-
-    public ValidUser createUserAuthToken(String email) {
-        String accessToken = authenticateUser(email, testConfig.getTestUserPassword());
-        return new ValidUser(email, accessToken);
     }
 
     private String nextUserEmail() {
