@@ -38,7 +38,7 @@ public class SpringSecurityConfiguration {
 
     private static final String PAYMENTS_ROLE = "payments";
     private static final String AUTHORISED_REFUNDS_ROLE = "payments-refund";
-    private static final String AUTHORISED_REFUND_APPROVER ="payments-refund-approver";
+    private static final String AUTHORISED_REFUND_APPROVER = "payments-refund-approver";
 
     public SpringSecurityConfiguration(final JwtGrantedAuthoritiesConverter jwtGrantedAuthoritiesConverter,
                                        final ServiceAuthFilter serviceAuthFilter
