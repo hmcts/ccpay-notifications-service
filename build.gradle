@@ -210,7 +210,7 @@ repositories {
 def versions = [
   log4j           : '2.25.3',
   lombok          : '1.18.42',
-  reformLogging   : '7.0.0',
+  reformLogging   : '8.0.0',
   springBoot      : springBoot.class.package.implementationVersion,
   jackson         : '2.19.2',
   restAssured     : '4.5.1',

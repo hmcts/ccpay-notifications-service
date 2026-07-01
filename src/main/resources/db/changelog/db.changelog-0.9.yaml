@@ -1,0 +1,47 @@
+databaseChangeLog:
+  # Supports NotificationRepository.findByReferenceOrderByDateUpdatedDesc(reference)
+  # and deleteByReference(reference), with ordering on latest updates.
+  - changeSet:
+      id: 100016
+      author: davidjones
+      changes:
+        - createIndex:
+            indexName: idx_notification_reference_date_updated
+            tableName: notification
+            columns:
+              - column:
+                  name: reference
+              - column:
+                  name: date_updated
+                  descending: true
+
+  # Supports NotificationRepository.findByReferenceAndNotificationTypeOrderByDateUpdatedDesc(
+  # reference, notificationType), including descending sort by date_updated.
+  - changeSet:
+      id: 100017
+      author: davidjones
+      changes:
+        - createIndex:
+            indexName: idx_notification_ref_type_date_updated
+            tableName: notification
+            columns:
+              - column:
+                  name: reference
+              - column:
+                  name: notification_type
+              - column:
+                  name: date_updated
+                  descending: true
+
+  # Supports ServiceContactRepository.findByServiceName(serviceName).
+  - changeSet:
+      id: 100018
+      author: davidjones
+      changes:
+        - createIndex:
+            indexName: idx_service_contact_service_name
+            tableName: service_contact
+            columns:
+              - column:
+                  name: service_name
+

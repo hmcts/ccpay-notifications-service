@@ -175,6 +175,26 @@ docker image rm <image-id>
 
 There is no need to remove postgres and java or similar core images.
 
+## Database indexing strategy
+
+When adding or changing repository query methods, keep database indexes aligned with query predicates and sort columns.
+
+- Liquibase changelogs are in `src/main/resources/db/changelog`.
+- Current query-driven index definitions are in `src/main/resources/db/changelog/db.changelog-0.9.yaml`.
+- Register any new changelog file in `src/main/resources/db/changelog/db.changelog-master.xml`.
+
+Current mappings:
+
+- `NotificationRepository.findByReferenceOrderByDateUpdatedDesc(...)` and `deleteByReference(...)`
+  -> `idx_notification_reference_date_updated` on `notification(reference, date_updated desc)`
+- `NotificationRepository.findByReferenceAndNotificationTypeOrderByDateUpdatedDesc(...)`
+  -> `idx_notification_ref_type_date_updated` on
+  `notification(reference, notification_type, date_updated desc)`
+- `ServiceContactRepository.findByServiceName(...)`
+  -> `idx_service_contact_service_name` on `service_contact(service_name)`
+
+Before merging DB index changes, run the project tests and ensure Liquibase migrations apply cleanly in your target environment.
+
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
