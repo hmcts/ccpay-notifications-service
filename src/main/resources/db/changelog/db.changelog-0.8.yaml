@@ -1,0 +1,15 @@
+databaseChangeLog:
+  - changeSet:
+      id: 100015
+      author: davidjones
+      changes:
+        - sql:
+            splitStatements: true
+            sql: >
+              INSERT INTO public.service_contact
+              (service_name, service_mailbox, from_email_address, from_mail_address)
+              VALUES('Mortgage and Landlord Possession Claims',
+                     'possession.support@justice.gov.uk',
+                     'possession.support@justice.gov.uk',
+                     NULL);
+
