@@ -33,8 +33,8 @@ spring:
         # Dummy OIDC client required even we are not going to use
         registration:
           oidc:
-            client-id: internal
-            client-secret: internal
+            client-id: ${OIDC_CLIENT_ID}
+            client-secret: ${OIDC_CLIENT_SECRET}
 
 oidc:
   audience-list: internal,paybubble,notifications-service
