@@ -1,3 +1,3 @@
 additional_databases = [
-    "postgresql-db2"
+  "postgresql-db2"
 ]
