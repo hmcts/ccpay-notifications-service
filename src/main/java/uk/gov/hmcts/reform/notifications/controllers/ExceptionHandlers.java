@@ -19,6 +19,7 @@ import uk.gov.hmcts.reform.notifications.exceptions.GovNotifyUnmappedException;
 import uk.gov.hmcts.reform.notifications.exceptions.InvalidAddressException;
 import uk.gov.hmcts.reform.notifications.exceptions.InvalidApiKeyException;
 import uk.gov.hmcts.reform.notifications.exceptions.InvalidTemplateId;
+import uk.gov.hmcts.reform.notifications.exceptions.NotificationDeletionException;
 import uk.gov.hmcts.reform.notifications.exceptions.NotificationListEmptyException;
 import uk.gov.hmcts.reform.notifications.exceptions.PostCodeLookUpNotFoundException;
 import uk.gov.hmcts.reform.notifications.exceptions.RestrictedApiKeyException;
@@ -72,5 +73,11 @@ public class ExceptionHandlers extends ResponseEntityExceptionHandler {
     public ResponseEntity return504(GatewayTimeoutException ex) {
         LOG.error(ex.getMessage());
         return new ResponseEntity<>(ex.getMessage(), HttpStatus.GATEWAY_TIMEOUT);
+    }
+
+    @ExceptionHandler(NotificationDeletionException.class)
+    public ResponseEntity<String> handleNotificationDeletion(NotificationDeletionException exception) {
+        LOG.error(exception.getMessage());
+        return new ResponseEntity<>(exception.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }

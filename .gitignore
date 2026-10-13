@@ -22,3 +22,4 @@ bin/main/application.yaml
 target/
 
 .DS_Store
+/bin
