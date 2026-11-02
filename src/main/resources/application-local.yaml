@@ -53,7 +53,7 @@ idam:
   api:
     url: ${IDAM_API_URL:http://localhost:5000}
   s2s-authorised:
-    services: refunds
+    services: refunds,disposer-fee-and-pay
   s2s-auth:
     url: http://localhost:8085
     totp_secret: ${OIDC_S2S_SECRET:}

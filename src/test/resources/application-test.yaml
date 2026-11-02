@@ -12,6 +12,8 @@ spring:
   datasource:
     driver-class-name: org.testcontainers.jdbc.ContainerDatabaseDriver
     url: jdbc:tc:postgresql:15.0://localhost/features
+    username: postgres
+    password: postgres
   liquibase:
     enabled: ${SPRING_LIQUIBASE_ENABLED:true}
     change-log: classpath:/db/changelog/db.changelog-master.xml
@@ -32,7 +34,7 @@ spring:
         registration:
           oidc:
             client-id: paybubble
-            client-secret: ${OIDC_CLIENT_SECRET}
+            client-secret: ${OIDC_CLIENT_SECRET:test-secret}
       resource:
         filter-order: 3
 
@@ -57,7 +59,7 @@ idam:
   api:
     url: ${IDAM_API_URL:https://idam-api.aat.platform.hmcts.net}
   s2s-authorised:
-    services:  ccpay_bubble,internal,payment_app,refunds_api
+    services: ccpay_bubble,internal,payment_app,refunds_api,disposer-fee-and-pay
   s2s-auth:
     url: http://rpe-service-auth-provider-aat.service.core-compute-aat.internal
     totp_secret: ${OIDC_S2S_SECRET:}
@@ -74,6 +76,8 @@ s2s:
   url: ${S2S_URL:http://rpe-service-auth-provider-aat.service.core-compute-aat.internal}
 
 notify:
+  letter.apiKey: test-api-key
+  email.apiKey: test-api-key
   template:
     cheque-po-cash:
       letter: test1

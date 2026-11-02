@@ -96,6 +96,7 @@ public class NotificationsServiceFunctionalTest {
     private static final String ROLE_PAYMENTS = "payments";
     private static final String ROLE_PAYMENTS_REFUND_REQUESTER = "payments-refund";
     private static final String ROLE_PAYMENTS_REFUND_APPROVER = "payments-refund-approver";
+    private static final String ROLE_DISPOSER_PAYMENT_USER = "disposer-payment-user";
     private static final String CITY = "London";
 
     private static final String COUNTY = "London";
@@ -113,7 +114,8 @@ public class NotificationsServiceFunctionalTest {
             ).getAuthorisationToken();
             userTokenPaymentRefundApprover = idamService.createUserWithSearchScope(
                 ROLE_PAYMENTS_REFUND_APPROVER,
-                ROLE_PAYMENTS
+                ROLE_PAYMENTS,
+                ROLE_DISPOSER_PAYMENT_USER
             ).getAuthorisationToken();
             serviceTokenPayBubble =
                 s2sTokenService.getS2sToken("ccpay_bubble", testConfigProperties.s2sPayBubble);
