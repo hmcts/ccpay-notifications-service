@@ -31,15 +31,7 @@ import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@SpringBootTest(properties = {
-    "spring.datasource.url=jdbc:h2:mem:notifications;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DB_CLOSE_DELAY=-1",
-    "spring.datasource.driver-class-name=org.h2.Driver",
-    "spring.datasource.username=sa",
-    "spring.datasource.password=",
-    "spring.liquibase.enabled=false",
-    "spring.flyway.enabled=false",
-    "spring.jpa.hibernate.ddl-auto=create-drop"
-})
+@SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 class NotificationDeletionIntegrationTest {
